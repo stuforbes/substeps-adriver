@@ -27,6 +27,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,18 @@ public enum DefaultDriverType implements DriverType {
 	FIREFOX(true) {
 		public WebDriver createWebDriverFrom() {
 			return new FirefoxDriver();
+		}
+	},
+	// If using PhantomJS, make sure you set the webdriver.shutdown property to 'false'. Otherwise, the external
+	// PhantomJS process gets killed after every scenario
+	PHANTOMJS(false) {
+		public WebDriver createWebDriverFrom() {
+			DesiredCapabilities capabilities = new DesiredCapabilities();
+			capabilities.setJavascriptEnabled(true);
+			
+			final int port = WebdriverSubstepsConfiguration.phantomJsPort();
+			
+			return new PhantomJSDriver(PortConfigurablePhantomJSDriverService.createServiceForPort(port, capabilities), capabilities);
 		}
 	},
 	HTMLUNIT(false) {

@@ -48,6 +48,7 @@ public enum WebdriverSubstepsConfiguration {
     private static final boolean HTMLUNIT_DISABLE_JS;
     private static final String HTMLUNIT_PROXY_HOST;
     private static final Integer HTMLUNIT_PROXY_PORT;
+    private static final Integer PHANTOMJS_PORT;
 
     static {
 
@@ -79,7 +80,9 @@ public enum WebdriverSubstepsConfiguration {
 
         HTMLUNIT_PROXY_HOST = Configuration.INSTANCE.getString("htmlunit.proxy.host");
         HTMLUNIT_PROXY_PORT = Configuration.INSTANCE.getInt("htmlunit.proxy.port");
-
+        
+        PHANTOMJS_PORT = Configuration.INSTANCE.getInt("phantomjs.port");
+        
         try {
             WEBDRIVER_FACTORY_CLASS = Class.forName(Configuration.INSTANCE.getString("webdriver.factory.class")).asSubclass(WebDriverFactory.class);
         } catch (ClassNotFoundException ex) {
@@ -140,6 +143,9 @@ public enum WebdriverSubstepsConfiguration {
         return HTMLUNIT_DISABLE_JS;
     }
 
+    public static int phantomJsPort() {
+		return PHANTOMJS_PORT;
+	}
 
     public static boolean closeVisualWebDriveronFail() {
         return VISUAL_WEBDRIVER_CLOSE_ON_FAIL;
@@ -163,5 +169,4 @@ public enum WebdriverSubstepsConfiguration {
     public static Class<? extends WebDriverFactory> getWebDriverFactoryClass() {
         return WEBDRIVER_FACTORY_CLASS;
     }
-
 }

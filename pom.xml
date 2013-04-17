@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.co.stuforbes.windowlicker.substeps</groupId>
-        <artifactId>windowlicker-substeps</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+	<artifactId>windowlicker-substeps</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 	<name>Windowlicker Substeps</name>
@@ -12,20 +13,20 @@
 
 
 	<properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<selenium.version>2.31.0</selenium.version>
-		
+
 		<hamcrest.version>1.3.RC2</hamcrest.version>
 		<junit.version>4.10</junit.version>
-        
+
 		<substeps.api.version>1.1.0</substeps.api.version>
 		<substeps.core.version>1.1.0</substeps.core.version>
 		<substeps.runners.version>1.1.0</substeps.runners.version>
-        <substeps.glossary.version>1.1.0</substeps.glossary.version>
-        
-        
+		<substeps.glossary.version>1.1.0</substeps.glossary.version>
+
+
 		<guava.version>10.0</guava.version>
 	</properties>
 
@@ -39,9 +40,9 @@
 		<dependency>
 			<groupId>com.objogate.wl</groupId>
 			<artifactId>windowlicker-web</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.objogate.wl</groupId>
 			<artifactId>windowlicker-core</artifactId>
@@ -53,50 +54,50 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.6.4</version>
 		</dependency>
-        
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.4</version>
-            <scope>test</scope>
-        </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-        </dependency>
-       
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
+			<scope>test</scope>
+		</dependency>
 
-			<!-- TEST DEPENDENCIES -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+		</dependency>
 
-<!-- Dependency on core must be TEST scope only -->
+
+		<!-- TEST DEPENDENCIES -->
+
+		<!-- Dependency on core must be TEST scope only -->
 		<dependency>
 			<groupId>com.technophobia.substeps</groupId>
 			<artifactId>substeps-core</artifactId>
 			<version>${substeps.core.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.technophobia.substeps</groupId>
 			<artifactId>substeps-junit-runner</artifactId>
 			<version>${substeps.runners.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-core</artifactId>
 			<version>${hamcrest.version}</version>
-			
+
 		</dependency>
 
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-library</artifactId>
 			<version>${hamcrest.version}</version>
-			
+
 		</dependency>
 
 
@@ -105,12 +106,18 @@
 			<artifactId>selenium-java</artifactId>
 			<version>${selenium.version}</version>
 		</dependency>
-        
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.1</version>
-        </dependency>
+
+		<dependency>
+			<groupId>com.github.detro.ghostdriver</groupId>
+			<artifactId>phantomjsdriver</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.1</version>
+		</dependency>
 
 	</dependencies>
 
@@ -118,9 +125,67 @@
 		<finalName>${project.artifactId}</finalName>
 		<plugins>
 
-</plugins>
+		</plugins>
 
 
 	</build>
+
+	<profiles>
+		<profile>
+			<id>generate-glossary</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+
+
+
+					<plugin>
+						<groupId>com.technophobia.substeps</groupId>
+						<artifactId>substeps-glossary-builder</artifactId>
+						<version>${substeps.glossary.version}</version>
+
+						<executions>
+							<execution>
+								<id>Build SubSteps Glossary</id>
+								<phase> process-test-resources</phase>
+								<goals>
+									<goal>generate-docs</goal>
+								</goals>
+							</execution>
+						</executions>
+
+						<configuration>
+							<stepImplementationClassNames>
+								<param>uk.co.stuforbes.windowlicker.substeps.step.ActionWebLickerStepImplementations</param>
+								<param>uk.co.stuforbes.windowlicker.substeps.step.AssertionWebLickerStepImplementations</param>
+
+								<param>uk.co.stuforbes.windowlicker.substeps.step.FinderWebLickerStepImplementations</param>
+								<param>uk.co.stuforbes.windowlicker.substeps.step.FormWebLickerStepImplementations</param>
+							</stepImplementationClassNames>
+
+							<glossaryPublisher
+								implementation="com.technophobia.substeps.glossary.JsonSubstepsPublisher">
+								<outputFile>${project.build.directory}/stepimplementations.json</outputFile>
+							</glossaryPublisher>
+
+						</configuration>
+
+
+						<dependencies>
+							<dependency>
+								<groupId>org.slf4j</groupId>
+								<artifactId>slf4j-log4j12</artifactId>
+								<version>1.6.4</version>
+							</dependency>
+						</dependencies>
+
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
 
 </project>

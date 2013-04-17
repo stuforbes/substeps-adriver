@@ -39,125 +39,123 @@ import com.google.common.collect.Maps;
  */
 public abstract class WebDriverSubstepsBy {
 
-    public static ByIdAndText ByIdAndText(final String id, final String text) {
-        return new ByIdAndText(id, text);
-    }
+	public static ByIdAndText ByIdAndText(final String id, final String text) {
+		return new ByIdAndText(id, text);
+	}
 
+	public static ByIdAndText ByIdAndCaseSensitiveText(final String id,
+			final String text) {
+		return new ByIdAndText(id, text, true);
+	}
 
-    public static ByIdAndText ByIdAndCaseSensitiveText(final String id, final String text) {
-        return new ByIdAndText(id, text, true);
-    }
+	public static ByTagAndAttribute ByTagAndAttribute(final String tagName,
+			final String attributeName, final String attributeValue) {
+		return new ByTagAndAttribute(tagName, attributeName, attributeValue);
+	}
 
-    public static ByTagAndAttribute ByTagAndAttribute(final String tagName,
-            final String attributeName, final String attributeValue) {
-        return new ByTagAndAttribute(tagName, attributeName, attributeValue);
-    }
+	public static ByTagAndAttributes ByTagAndAttributes(final String tagName,
+			final Map<String, String> requiredAttributes) {
+		return new ByTagAndAttributes(tagName, requiredAttributes);
+	}
 
-    public static ByTagAndAttributes ByTagAndAttributes(final String tagName,
-            final Map<String, String> requiredAttributes) {
-        return new ByTagAndAttributes(tagName, requiredAttributes);
-    }
+	public static ByTagAndAttributes ByTagAndAttributes(final String tagName,
+			final String attributeString) {
 
+		final Map<String, String> expectedAttributes = convertToMap(attributeString);
 
-    public static ByTagAndAttributes ByTagAndAttributes(final String tagName, final String attributeString) {
+		return new ByTagAndAttributes(tagName, expectedAttributes);
+	}
 
-        final Map<String, String> expectedAttributes = convertToMap(attributeString);
+	/**
+	 * Convert a string of the form type="submit",value="Search" to a map.
+	 * 
+	 * @example
+	 * @param attributes
+	 *            the attributes string
+	 * @return the map
+	 */
+	public static Map<String, String> convertToMap(final String attributes) {
+		Map<String, String> attributeMap = null;
 
-        return new ByTagAndAttributes(tagName, expectedAttributes);
-    }
+		// split the attributes up, will be received as a comma separated list
+		// of name value pairs
+		final String[] nvps = attributes.split(",");
 
+		if (nvps != null) {
+			for (final String nvp : nvps) {
+				final String[] split = nvp.split("=");
+				if (split != null && split.length == 2) {
+					if (attributeMap == null) {
+						attributeMap = new HashMap<String, String>();
+					}
+					attributeMap.put(split[0], split[1].replaceAll("\"", ""));
+				}
+			}
+		}
 
-    /**
-     * Convert a string of the form type="submit",value="Search" to a map.
-     * 
-     * @example
-     * @param attributes
-     *            the attributes string
-     * @return the map
-     */
-    public static Map<String, String> convertToMap(final String attributes) {
-        Map<String, String> attributeMap = null;
+		return attributeMap;
+	}
 
-        // split the attributes up, will be received as a comma separated list
-        // of name value pairs
-        final String[] nvps = attributes.split(",");
+	public static ByCurrentWebElement ByCurrentWebElement(final WebElement elem) {
+		return new ByCurrentWebElement(elem);
+	}
 
-        if (nvps != null) {
-            for (final String nvp : nvps) {
-                final String[] split = nvp.split("=");
-                if (split != null && split.length == 2) {
-                    if (attributeMap == null) {
-                        attributeMap = new HashMap<String, String>();
-                    }
-                    attributeMap.put(split[0], split[1].replaceAll("\"", ""));
-                }
-            }
-        }
+	public static ByText ByText(final String text) {
+		return new ByText(text);
+	}
 
-        return attributeMap;
-    }
+	public static ByTagAndWithText ByTagAndWithText(final String tag,
+			final String text, final boolean matchPartial) {
+		return new ByTagAndWithText(tag, text, matchPartial);
+	}
 
+	public static ByIdContainingText ByIdContainingText(final String id,
+			final String text) {
+		return new ByIdContainingText(id, text);
+	}
 
-    public static ByCurrentWebElement ByCurrentWebElement(final WebElement elem) {
-        return new ByCurrentWebElement(elem);
-    }
+	protected static boolean elementHasExpectedAttributes(final WebElement e,
+			final Map<String, String> expectedAttributes) {
+		final Map<String, String> actualValues = new HashMap<String, String>();
 
-    public static ByText ByText(final String text) {
-        return new ByText(text);
-    }
+		for (final String key : expectedAttributes.keySet()) {
+			final String elementVal = e.getAttribute(key);
 
-    public static ByTagAndWithText ByTagAndWithText(final String tag, final String text, final boolean matchPartial) {
-        return new ByTagAndWithText(tag, text, matchPartial);
-    }
+			// if no attribute will this throw an exception or just return
+			// null ??
+			actualValues.put(key, elementVal);
 
+		}
 
-    public static ByIdContainingText ByIdContainingText(final String id, final String text) {
-        return new ByIdContainingText(id, text);
-    }
+		final MapDifference<String, String> difference = Maps.difference(
+				expectedAttributes, actualValues);
+		return difference.areEqual();
+	}
 
+	static abstract class BaseBy extends By {
 
-    protected static boolean elementHasExpectedAttributes(final WebElement e,
-            final Map<String, String> expectedAttributes) {
-        final Map<String, String> actualValues = new HashMap<String, String>();
+		@Override
+		public final List<WebElement> findElements(final SearchContext context) {
+			List<WebElement> matchingElems = findElementsBy(context);
 
-        for (final String key : expectedAttributes.keySet()) {
-            final String elementVal = e.getAttribute(key);
+			if (matchingElems == null) {
+				matchingElems = Collections.emptyList();
+			}
 
-            // if no attribute will this throw an exception or just return
-            // null ??
-            actualValues.put(key, elementVal);
+			return matchingElems;
+		}
 
-        }
+		public abstract List<WebElement> findElementsBy(
+				final SearchContext context);
+	}
 
-        final MapDifference<String, String> difference = Maps.difference(expectedAttributes, actualValues);
-        return difference.areEqual();
-    }
+	static class ByTagAndAttribute extends BaseBy {
 
-    static abstract class BaseBy extends By {
+		private final String tagName;
+		private final String attributeName;
+		private final String attributeValue;
 
-        @Override
-        public final List<WebElement> findElements(final SearchContext context) {
-            List<WebElement> matchingElems = findElementsBy(context);
-
-            if (matchingElems == null) {
-                matchingElems = Collections.emptyList();
-            }
-
-            return matchingElems;
-        }
-
-
-        public abstract List<WebElement> findElementsBy(final SearchContext context);
-    }
-    
-    static class ByTagAndAttribute extends BaseBy {
-
-        private final String tagName;
-        private final String attributeName;
-        private final String attributeValue;
-
-
-        public ByTagAndAttribute(String tagName, String attributeName,
+		public ByTagAndAttribute(String tagName, String attributeName,
 				String attributeValue) {
 			super();
 			this.tagName = tagName;
@@ -165,258 +163,289 @@ public abstract class WebDriverSubstepsBy {
 			this.attributeValue = attributeValue;
 		}
 
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
+
+			List<WebElement> matchingElems = null;
+
+			final List<WebElement> tagElements = context.findElements(By
+					.tagName(this.tagName));
+
+			for (final WebElement elem : tagElements) {
+				final String itemAttributeValue = elem
+						.getAttribute(attributeName);
+				if (StringUtils.isNotBlank(itemAttributeValue)
+						&& itemAttributeValue.contains(attributeValue)) {
+					if (matchingElems == null) {
+						matchingElems = new ArrayList<WebElement>();
+					}
+					matchingElems.add(elem);
+				}
+			}
+
+			return matchingElems;
+		}
 
 		@Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
+		public String toString() {
+			return "By.tag: " + tagName + " and attribute: " + attributeName
+					+ "=" + attributeValue;
+		}
+	}
 
-            List<WebElement> matchingElems = null;
+	static class ByTagAndAttributes extends BaseBy {
 
-            final List<WebElement> tagElements = context.findElements(By.tagName(this.tagName));
+		private final String tagName;
+		private final Map<String, String> requiredAttributes;
 
-            for (final WebElement elem : tagElements) {
-                final String itemAttributeValue = elem.getAttribute(attributeName);
-                if (StringUtils.isNotBlank(itemAttributeValue) && itemAttributeValue.contains(attributeValue)) {
-                	if (matchingElems == null) {
-                        matchingElems = new ArrayList<WebElement>();
-                    }
-                    matchingElems.add(elem);
-                }
-            }
+		ByTagAndAttributes(final String tagName,
+				final Map<String, String> requiredAttributes) {
+			this.tagName = tagName;
+			this.requiredAttributes = requiredAttributes;
+		}
 
-            return matchingElems;
-        }
-    }
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
 
-    static class ByTagAndAttributes extends BaseBy {
+			List<WebElement> matchingElems = null;
 
-        private final String tagName;
-        private final Map<String, String> requiredAttributes;
+			final List<WebElement> tagElements = context.findElements(By
+					.tagName(this.tagName));
 
+			for (final WebElement e : tagElements) {
+				// does this WebElement have the attributes that we need!
 
-        ByTagAndAttributes(final String tagName, final Map<String, String> requiredAttributes) {
-            this.tagName = tagName;
-            this.requiredAttributes = requiredAttributes;
-        }
+				if (elementHasExpectedAttributes(e, this.requiredAttributes)) {
 
+					if (matchingElems == null) {
+						matchingElems = new ArrayList<WebElement>();
+					}
+					matchingElems.add(e);
+				}
+			}
 
-        @Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
+			return matchingElems;
+		}
 
-            List<WebElement> matchingElems = null;
+		@Override
+		public String toString() {
+			return "By.tag: " + tagName + " and attributes: "
+					+ requiredAttributes;
+		}
+	}
 
-            final List<WebElement> tagElements = context.findElements(By.tagName(this.tagName));
+	/**
+	 * A By for use with the current web element, to be chained with other Bys
+	 * 
+	 */
+	static class ByCurrentWebElement extends BaseBy {
 
-            for (final WebElement e : tagElements) {
-                // does this WebElement have the attributes that we need!
+		private final WebElement currentElement;
 
-                if (elementHasExpectedAttributes(e, this.requiredAttributes)) {
+		public ByCurrentWebElement(final WebElement elem) {
+			this.currentElement = elem;
+		}
 
-                    if (matchingElems == null) {
-                        matchingElems = new ArrayList<WebElement>();
-                    }
-                    matchingElems.add(e);
-                }
-            }
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
 
-            return matchingElems;
-        }
-    }
+			final List<WebElement> matchingElems = new ArrayList<WebElement>();
+			matchingElems.add(this.currentElement);
 
-    /**
-     * A By for use with the current web element, to be chained with other Bys
-     * 
-     */
-    static class ByCurrentWebElement extends BaseBy {
+			return matchingElems;
+		}
+		
+		@Override
+		public String toString() {
+			return "By.currentWebElement: " + currentElement;
+		}
+	}
 
-        private final WebElement currentElement;
+	public static class ByText extends BaseBy {
 
+		private final String text;
 
-        public ByCurrentWebElement(final WebElement elem) {
-            this.currentElement = elem;
-        }
+		ByText(final String text) {
 
+			this.text = text;
+		}
 
-        @Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
+		 * )
+		 */
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
+			if (context instanceof WebElement) {
+				WebElement element = (WebElement) context;
+				if (element.getText().equals(text)) {
+					return Collections.singletonList(element);
+				}
+			}
+			return Collections.emptyList();
+		}
 
-            final List<WebElement> matchingElems = new ArrayList<WebElement>();
-            matchingElems.add(this.currentElement);
+		@Override
+		public String toString() {
+			return "By.text: " + text;
+		}
+	}
 
-            return matchingElems;
-        }
-    }
-    
-    public static class ByText extends BaseBy {
+	public static class ByTagAndWithText extends BaseBy {
 
-        private final String text;
-
-
-        ByText(final String text) {
-
-            this.text = text;
-        }
-
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
-         * )
-         */
-        @Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
-        	if(context instanceof WebElement){
-        		WebElement element = (WebElement) context;
-        		if(element.getText().equals(text)){
-        			return Collections.singletonList(element);
-        		}
-        	}
-            return Collections.emptyList();
-        }
-
-    }
-
-    public static class ByTagAndWithText extends BaseBy {
-
-        private final String tag;
-        private final String text;
+		private final String tag;
+		private final String text;
 		private boolean matchPartial;
 
+		ByTagAndWithText(final String tag, final String text,
+				boolean matchPartial) {
 
-        ByTagAndWithText(final String tag, final String text, boolean matchPartial) {
-
-            this.tag = tag;
-            this.text = text;
+			this.tag = tag;
+			this.text = text;
 			this.matchPartial = matchPartial;
-        }
+		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
+		 * )
+		 */
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
-         * )
-         */
-        @Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
+			List<WebElement> matchingElems = null;
 
-            List<WebElement> matchingElems = null;
+			final List<WebElement> elems = context.findElements(By
+					.tagName(this.tag));
+			if (elems != null) {
+				for (final WebElement e : elems) {
+					boolean match;
+					if (matchPartial) {
+						match = e.getText().toLowerCase()
+								.contains(text.toLowerCase());
+					} else {
+						match = this.text.equalsIgnoreCase(e.getText());
+					}
 
-            final List<WebElement> elems = context.findElements(By.tagName(this.tag));
-            if (elems != null) {
-                for (final WebElement e : elems) {
-                	boolean match;
-                	if(matchPartial){
-                		match = e.getText().toLowerCase().contains(text.toLowerCase());
-                	} else{
-                		match = this.text.equalsIgnoreCase(e.getText());
-                	}
-                	
-                    if (match) {
-                        if (matchingElems == null) {
-                            matchingElems = new ArrayList<WebElement>();
-                        }
-                        matchingElems.add(e);
-                    }
-                }
-            }
+					if (match) {
+						if (matchingElems == null) {
+							matchingElems = new ArrayList<WebElement>();
+						}
+						matchingElems.add(e);
+					}
+				}
+			}
 
-            return matchingElems;
-        }
+			return matchingElems;
+		}
 
-    }
+		@Override
+		public String toString() {
+			return "By.tag: " + tag + " and with text " + text;
+		}
+	}
 
-    public static class ByIdContainingText extends BaseBy {
+	public static class ByIdContainingText extends BaseBy {
 
-        protected final String text;
-        protected final String id;
+		protected final String text;
+		protected final String id;
 
+		ByIdContainingText(final String id, final String text) {
+			this.id = id;
+			this.text = text;
+		}
 
-        ByIdContainingText(final String id, final String text) {
-            this.id = id;
-            this.text = text;
-        }
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
+		 * )
+		 */
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
 
+			List<WebElement> matchingElems = null;
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
-         * )
-         */
-        @Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
+			final List<WebElement> elems = context.findElements(By.id(this.id));
+			if (elems != null) {
+				for (final WebElement e : elems) {
 
-            List<WebElement> matchingElems = null;
+					if (e.getText() != null && e.getText().contains(this.text)) {
 
-            final List<WebElement> elems = context.findElements(By.id(this.id));
-            if (elems != null) {
-                for (final WebElement e : elems) {
+						if (matchingElems == null) {
+							matchingElems = new ArrayList<WebElement>();
+						}
+						matchingElems.add(e);
+					}
+				}
+			}
 
-                    if (e.getText() != null && e.getText().contains(this.text)) {
+			return matchingElems;
+		}
+		
+		@Override
+		public String toString() {
+			return "By.id: " + id + " and containing text " + text;
+		}
+	}
 
-                        if (matchingElems == null) {
-                            matchingElems = new ArrayList<WebElement>();
-                        }
-                        matchingElems.add(e);
-                    }
-                }
-            }
+	public static class ByIdAndText extends BaseBy {
 
-            return matchingElems;
-        }
-    }
+		protected final String text;
+		protected final String id;
+		protected final boolean caseSensitive;
 
-    public static class ByIdAndText extends BaseBy {
+		ByIdAndText(final String id, final String text) {
+			this(id, text, false);
+		}
 
-        protected final String text;
-        protected final String id;
-        protected final boolean caseSensitive;
+		ByIdAndText(final String id, final String text,
+				final boolean caseSensitive) {
+			this.id = id;
+			this.text = text;
+			this.caseSensitive = caseSensitive;
+		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
+		 * )
+		 */
+		@Override
+		public List<WebElement> findElementsBy(final SearchContext context) {
 
-        ByIdAndText(final String id, final String text) {
-            this(id, text, false);
-        }
+			List<WebElement> matchingElems = null;
 
+			final List<WebElement> elems = context.findElements(By.id(this.id));
+			if (elems != null) {
+				for (final WebElement e : elems) {
 
-        ByIdAndText(final String id, final String text, final boolean caseSensitive) {
-            this.id = id;
-            this.text = text;
-            this.caseSensitive = caseSensitive;
-        }
+					if ((this.caseSensitive && this.text.equals(e.getText()))
+							|| (!this.caseSensitive && this.text
+									.equalsIgnoreCase(e.getText()))) {
 
+						if (matchingElems == null) {
+							matchingElems = new ArrayList<WebElement>();
+						}
+						matchingElems.add(e);
+					}
+				}
+			}
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see
-         * org.openqa.selenium.By#findElements(org.openqa.selenium.SearchContext
-         * )
-         */
-        @Override
-        public List<WebElement> findElementsBy(final SearchContext context) {
-
-            List<WebElement> matchingElems = null;
-
-            final List<WebElement> elems = context.findElements(By.id(this.id));
-            if (elems != null) {
-                for (final WebElement e : elems) {
-
-                    if ((this.caseSensitive && this.text.equals(e.getText()))
-                            || (!this.caseSensitive && this.text.equalsIgnoreCase(e.getText()))) {
-
-                        if (matchingElems == null) {
-                            matchingElems = new ArrayList<WebElement>();
-                        }
-                        matchingElems.add(e);
-                    }
-                }
-            }
-
-            return matchingElems;
-        }
-    }
+			return matchingElems;
+		}
+		
+		@Override
+		public String toString() {
+			return "By.id: " + id + " and with text " + text;
+		}
+	}
 }
