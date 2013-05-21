@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>uk.co.stuforbes.windowlicker.substeps</groupId>
-	<artifactId>windowlicker-substeps</artifactId>
+	<groupId>uk.co.stfo</groupId>
+	<artifactId>substeps-adriver</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
-	<name>Windowlicker Substeps</name>
-	<description>Windowlicker alternative to Webdriver SubSteps</description>
+	<name>A-Driver Substeps</name>
+	<description>A-Driver alternative to Webdriver SubSteps</description>
 
 
 
@@ -18,14 +18,13 @@
 
 		<selenium.version>2.31.0</selenium.version>
 
-		<hamcrest.version>1.3.RC2</hamcrest.version>
+		<hamcrest.version>1.3</hamcrest.version>
 		<junit.version>4.10</junit.version>
 
-		<substeps.api.version>1.1.0</substeps.api.version>
-		<substeps.core.version>1.1.0</substeps.core.version>
-		<substeps.runners.version>1.1.0</substeps.runners.version>
+		<substeps.api.version>1.1.1-SNAPSHOT</substeps.api.version>
+		<substeps.core.version>1.1.1-SNAPSHOT</substeps.core.version>
+		<substeps.runners.version>1.1.1-SNAPSHOT</substeps.runners.version>
 		<substeps.glossary.version>1.1.0</substeps.glossary.version>
-
 
 		<guava.version>10.0</guava.version>
 	</properties>
@@ -38,15 +37,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.objogate.wl</groupId>
-			<artifactId>windowlicker-web</artifactId>
-			<version>1.0.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.objogate.wl</groupId>
-			<artifactId>windowlicker-core</artifactId>
-			<version>1.0.0</version>
+			<groupId>uk.co.stfo</groupId>
+			<artifactId>adriver</artifactId>
+			<version>0.1.8-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -128,6 +121,41 @@
 		</plugins>
 
 
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											com.technophobia.substeps
+										</groupId>
+										<artifactId>
+											substeps-glossary-builder
+										</artifactId>
+										<versionRange>
+											[1.1.0,)
+										</versionRange>
+										<goals>
+											<goal>generate-docs</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<profiles>
@@ -158,11 +186,11 @@
 
 						<configuration>
 							<stepImplementationClassNames>
-								<param>uk.co.stuforbes.windowlicker.substeps.step.ActionWebLickerStepImplementations</param>
-								<param>uk.co.stuforbes.windowlicker.substeps.step.AssertionWebLickerStepImplementations</param>
+								<param>uk.co.stf.adriver.substeps.step.ActionADriverStepImplementations</param>
+								<param>uk.co.stf.adriver.substeps.step.AssertionADriverStepImplementations</param>
 
-								<param>uk.co.stuforbes.windowlicker.substeps.step.FinderWebLickerStepImplementations</param>
-								<param>uk.co.stuforbes.windowlicker.substeps.step.FormWebLickerStepImplementations</param>
+								<param>uk.co.stf.adriver.substeps.step.FinderADriverStepImplementations</param>
+								<param>uk.co.stf.adriver.substeps.step.FormADriverStepImplementations</param>
 							</stepImplementationClassNames>
 
 							<glossaryPublisher

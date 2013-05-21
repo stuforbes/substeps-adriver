@@ -26,6 +26,10 @@
   <appender-ref ref="console" />
 </logger>
 
+<logger name="org.apache" additivity="false">
+	<level value="FATAL"/>
+	<appender-ref ref="console"/>
+</logger>
 
 <logger name="com.technophobia.webdriver" additivity="false">
   <level value="debug"/>
