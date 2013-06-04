@@ -1,9 +1,8 @@
 package uk.co.stfo.adriver.substeps.step;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.not;
-
-import org.junit.Assert;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
@@ -11,18 +10,16 @@ import org.slf4j.LoggerFactory;
 
 import uk.co.stfo.adriver.action.ElementAction;
 import uk.co.stfo.adriver.element.Element;
-import uk.co.stfo.adriver.substeps.common.WebDriverSubstepsBy;
-import uk.co.stfo.adriver.substeps.runner.DefaultExecutionSetupTearDown;
+import uk.co.stfo.adriver.substeps.common.By2;
+import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
 
 import com.technophobia.substeps.model.SubSteps.Step;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
-import com.technophobia.substeps.model.SubSteps.StepParameter;
-import com.technophobia.substeps.model.parameter.BooleanConverter;
 
-@StepImplementations(requiredInitialisationClasses = DefaultExecutionSetupTearDown.class)
+@StepImplementations(requiredInitialisationClasses = DriverInitialisation.class)
 public class FormADriverStepImplementations extends AbstractADriverStepImplementations {
 
-    private static final Logger logger = LoggerFactory.getLogger(FormADriverStepImplementations.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FormADriverStepImplementations.class);
 
     private final FinderADriverStepImplementations locator;
 
@@ -30,128 +27,113 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
     //
 
     public FormADriverStepImplementations() {
-        super();
-        this.locator = new FinderADriverStepImplementations(testRunSupplier());
+        this.locator = new FinderADriverStepImplementations();
     }
 
 
     /**
-     * Submit the form of the current element. NB using click is preferable as
-     * javascript may be executed on click, which this method would bypass
+     * Submit the form that the current element belongs to
      * 
      * @example Submit
-     * @section Clicks
+     * @section Form
      */
     @Step("Submit")
     public void submit() {
-        logger.debug("About to submit the form");
+        LOG.debug("Submit");
         currentElement().perform().submit();
     }
 
 
-    // TODO quote this, or just send the remainder of the line
     /**
-     * Enters text to the current element, without clearing any current content
-     * first
+     * Type the text defined in value into the current element
      * 
-     * @example SendKeys hello
-     * @section Forms
+     * @example SendKeys "Hello!"
+     * @section Form
+     * 
      * @param value
-     *            the value
+     *            The text to be typed
      */
     @Step("SendKeys \"([^\"]*)\"")
     public void sendKeys(final String value) {
-        logger.debug("About to send keys " + value + " to the current element");
+        LOG.debug("SendKeys \"{}\"", value);
         currentElement().perform().type(value);
     }
 
 
     /**
-     * Find an element by id, clear any text from the element, and enter text
+     * Find the element with the id, and clear the existing text of it, before
+     * replacing with the contents of value
      * 
-     * @example ClearAndSendKeys "fred" to id username
-     * @section Forms
+     * @example ClearAndSendKeys "Hello!" to id welcome-field
+     * @section Form
+     * 
      * @param id
-     *            the id
+     *            the id of the element to be located
      * @param value
-     *            the value
+     *            the text to be entered into the element
      */
     @Step("ClearAndSendKeys \"([^\"]*)\" to id ([^\"]*)")
     public void sendKeysById(final String value, final String id) {
-        logger.debug("About to send keys" + value + " to item with id " + id);
+        LOG.debug("ClearAndSendKeys \"{}\" to id {}", value, id);
         locator.findById(id);
         clearAndSendKeys(value);
     }
 
 
     /**
-     * Clear any text from the element, and enter text (to the current element)
+     * Clear the existing text of the current element, before replacing with the
+     * contents of value
      * 
-     * @example ClearAndSendKeys "hello"
-     * @section Forms
+     * @example ClearAndSendKeys "Hello!"
+     * @section Form
+     * 
      * @param value
-     *            the value
+     *            the text to be entered into the element
      */
     @Step("ClearAndSendKeys \"([^\"]*)\"")
     public void clearAndSendKeys(final String value) {
-        logger.debug("About to clear the current element and send the keys " + value);
+        LOG.debug("ClearAndSendKeys \"{}\"", value);
         currentElement().perform().clear();
         currentElement().perform().type(value);
     }
 
 
     /**
-     * Select a value in the option list that has the id
+     * Find the select element with the id specified in the id field, and choose
+     * the option with the text defined in value
      * 
-     * @example ChooseOption "fred" in id usersList
-     * @section Forms
+     * @example ChooseOption "Option 1"
+     * @section Form
+     * 
      * @param value
-     *            the value
+     *            the option text of the option to be selected
      * @param id
-     *            the id
+     *            the id of the select box
      */
     @Step("ChooseOption \"([^\"]*)\" in id ([^\"]*)")
     public void selectValueInId(final String value, final String id) {
-        logger.debug("About to choose option " + value + " in select box with id " + id);
+        LOG.debug("ChooseOption \"{}\" in id {}", value, id);
 
         final Element element = locator.findById(id);
 
-        chooseOptionByTextInSelect(value, element);
+        element.perform().select(value);
 
     }
 
 
     /**
-     * @param value
-     * @param selectElement
-     */
-    public void chooseOptionByTextInSelect(final String value, final Element element) {
-        element.perform().perform(new ElementAction() {
-
-            public void doActionOn(final WebElement element) {
-                final Select select = new Select(element);
-                select.selectByVisibleText(value);
-                Assert.assertTrue("expected value is not selected", select.getFirstSelectedOption().isSelected());
-                Assert.assertThat("expected value is not selected", value,
-                        is(select.getFirstSelectedOption().getText()));
-            }
-        });
-    }
-
-
-    /**
-     * Select a value in the option list in the current element, a Find
-     * operation is required immediatebly before
+     * Select an option in the current element (assumed to be a Select box),
+     * that has a value defined in the value field
      * 
-     * @example ChooseOption "fred" in current element
-     * @section Forms
+     * @example ChooseOption "Option 3" in current element
+     * @section Form
+     * 
      * @param value
-     *            the value
-     * @param id
-     *            the id
+     *            the value of the option element under the select
      */
     @Step("ChooseOption \"([^\"]*)\" in current element")
     public void selectValueInCurrentElement(final String value) {
+        LOG.debug("ChooseOption \"{}\" in current element", value);
 
         currentElement().perform().perform(new ElementAction() {
 
@@ -162,72 +144,84 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
     }
 
 
+    /**
+     * Assert that the select box with the id specified, has an option with text
+     * defined in the value attribute, and that option is currently selected
+     * 
+     * @example AssertSelect id="select-box" text="Option 4" is currently
+     *          selected
+     * @section Form
+     * 
+     * @param id
+     *            the id of the select box
+     * @param value
+     *            the text of the option element
+     */
     @Step("AssertSelect id=\"([^\"]*)\" text=\"([^\"]*)\" is currently selected")
     public void assertOptionIsSelected(final String id, final String value) {
-        logger.debug("Asserting select box with id " + id + " has option " + value + " selected");
-        locator.findById(id).child(WebDriverSubstepsBy.ByTagAndWithText("option", value, true)).assertThat()
-                .hasAttribute("selected", is("true"));
+        LOG.debug("AssertSelect id=\"{}\" text=\"{}\" is currently selected", id, value);
+        final Element optionElement = locator.findById(id).child(By2.combined(By.tagName("option"), By2.text(value)));
+
+        optionElement.assertThat().matches(new BaseMatcher<WebElement>() {
+
+            public boolean matches(final Object item) {
+                return ((WebElement) item).isSelected();
+            }
+
+
+            public void describeTo(final Description description) {
+                description.appendText("is selected");
+            }
+        });
     }
 
 
+    /**
+     * Assert that the select box with the id specified, has an option with text
+     * defined in the value attribute, and that option is currently not selected
+     * 
+     * @example AssertSelect id="select-box" text="Option 4" is not currently
+     *          selected
+     * @section Form
+     * 
+     * @param id
+     *            the id of the select box
+     * @param value
+     *            the text of the option element
+     */
     @Step("AssertSelect id=\"([^\"]*)\" text=\"([^\"]*)\" is not currently selected")
     public void assertOptionIsNotSelected(final String id, final String value) {
-        logger.debug("Asserting select box with id " + id + " has option " + value + " not selected");
-        locator.findById(id).child(WebDriverSubstepsBy.ByTagAndWithText("option", value, true)).assertThat()
-                .hasAttribute("selected", is(not("true")));
-        ;
+        LOG.debug("AssertSelect id=\"{}\" text=\"{}\" is not currently selected", id, value);
+        final Element optionElement = locator.findById(id).child(By2.combined(By.tagName("option"), By2.text(value)));
+
+        optionElement.assertThat().matches(new BaseMatcher<WebElement>() {
+
+            public boolean matches(final Object item) {
+                return !((WebElement) item).isSelected();
+            }
+
+
+            public void describeTo(final Description description) {
+                description.appendText("is not selected");
+            }
+        });
     }
 
 
     /**
-     * Use: FindRadioButton inside tag="label" with label="<radio_button_text>"
-     * + SetRadioButton checked=<true> in preference as this will locate the
-     * radio button by visible text rather than the underlying value.
-     * 
-     * Locates a radio button with a specific value and checks the radio button.
-     * 
-     * @example SetRadioButton name=opt_in, value=OFF, checked=true
-     * @section Forms
-     * @param name
-     *            the name
-     * @param value
-     *            the value
-     * @param checked
-     *            the checked
-     * @deprecated use "SetRadioButton checked=.." instead
-     */
-    @Deprecated
-    @Step("SetRadioButton name =([^\"]*), value =([^\"]*), checked =([^\"]*)")
-    public void setRadioButtonValue(final String name, final String value, final String checked) {
-
-        throw new IllegalStateException("change code to use SetRadioButton checked= true/false instead");
-        // logger.debug("Setting radio button with name " + name + " to value "
-        // + value + " with checked status " + checked);
-        // webDriverContext().setCurrentElement(null);
-        // final WebElement elem = this.locator
-        // .findElementByPredicate(new RadioButtonPredicate(name.trim(),
-        // value.trim()));
-        //
-        // Assert.assertNotNull("expecting a radio buttin element with value"
-        // + value, elem);
-        //
-        // webDriverContext().setCurrentElement(elem);
-        //
-        // final boolean val = Boolean.parseBoolean(checked.trim());
-        // setCheckboxValue(elem, val);
-    }
-
-
-    /**
-     * Sets the value of the current element, assumed to be a radio button to...
+     * Sets the checked state of the current element, which is assumed to be a
+     * radio button
      * 
      * @example SetRadioButton checked=true
-     * @section Forms
+     * @section Form
+     * 
      * @param checked
-     *            the checked
+     *            the checked state of the radio button. Will either be true or
+     *            false
      */
     @Step("SetRadioButton checked=([^\"]*)")
     public void setRadioButtonChecked(final String checked) {
+        LOG.debug("SetRadioButton checked={}", checked);
 
         // assumes current element is not null and a radio button
         final Element currentElem = currentElement();
@@ -238,152 +232,29 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
 
 
     /**
-     * Sets the value of the current element, assumed to be a checkbox to...
+     * Sets the checked state of the current element, which is assumed to be a
+     * checkbox
      * 
      * @example SetCheckedBox checked=true
-     * @section Forms
+     * @section Form
+     * 
      * @param checked
-     *            the checked
+     *            the checked state of the checkbox. Will either be true or
+     *            false
      */
     @Step("SetCheckedBox checked=([^\"]*)")
     public void setSetCheckedBoxChecked(final String checked) {
-
-        // assumes current element is not null and a radio button
+        LOG.debug("SetCheckedBox checked={}", checked);
 
         final boolean val = Boolean.parseBoolean(checked.trim());
         setCheckboxValue(currentElement(), val);
     }
 
 
-    /**
-     * Sets the value of a radio button
-     * 
-     * @example SetRadioButton name="opt_in", text="radio button text"
-     * @section Forms
-     * @param name
-     *            the name
-     * @param text
-     *            text value
-     * @deprecated use SetRadioButton checked=true / false instead with an
-     *             apporpriate finder method
-     */
-    @Deprecated
-    @Step("SetRadioButton name=\"([^\"]*)\", text=\"([^\"]*)\"")
-    public void setRadioButton(final String name, final String text) {
-
-        throw new IllegalStateException("change code to use SetRadioButton checked=true / false instead");
-
-        // logger.debug("About to set radio button with name " + name
-        // + " to text " + text);
-        // final WebElement elem = getRadioButtonByNameAndText(name, text);
-        //
-        // elem.click();
-    }
-
-
-    /**
-     * Asserts a value of a radio button
-     * 
-     * @example AssertRadioButton name="radio_btn_name", text="text",
-     *          checked="true"
-     * @section Forms
-     * @param name
-     *            the name
-     * @param text
-     *            text value
-     * @param checked
-     *            true or false to indicate wether the checkbox is checked or
-     *            not
-     * @deprecated use AssertRadioButton checked=true
-     */
-    @Deprecated
-    @Step("AssertRadioButton name=\"([^\"]*)\", text=\"([^\"]*)\", checked=\"([^\"]*)\"")
-    public void assertRadioButton(final String name, final String text,
-            @StepParameter(converter = BooleanConverter.class) final Boolean checked) {
-
-        throw new IllegalStateException("change code to use AssertRadioButton checked= true/false instead");
-        //
-        // logger.debug("Asserting radio button " + name + ", option " + text
-        // + " is " + (checked ? "" : "not") + "checked");
-        // final WebElement elem = getRadioButtonByNameAndText(name, text);
-        //
-        // final String checkedAttr = elem.getAttribute("checked");
-        //
-        // Assert.assertNotNull(checkedAttr);
-        //
-        // Assert.assertThat(checked, is(Boolean.parseBoolean(checkedAttr)));
-
-    }
-
-
-    // /**
-    // * @param name
-    // * @param text
-    // * @return
-    // */
-    // public WebElement getRadioButtonByNameAndText(final String name,
-    // final String text) {
-    //
-    //
-    // logger.debug("About to get radio button with name " + name
-    // + " and text " + text);
-    // webDriverContext().setCurrentElement(null);
-    //
-    // final RadioButtonPredicate predicate = new RadioButtonPredicate();
-    // predicate.setText(text.trim());
-    // predicate.setName(name.trim());
-    //
-    // final WebElement elem = this.locator.findElementByPredicate(predicate);
-    //
-    // Assert.assertNotNull("expecting a radio buttin element with name:text "
-    // + name + ":" + text, elem);
-    //
-    // webDriverContext().setCurrentElement(elem);
-    // return elem;
-    // }
-
-    /**
-     * Sets a check box value; deprecated use
-     * 
-     * @example SetCheckBox name="accept", checked=true
-     * @section Forms
-     * @param name
-     *            the name
-     * @param checked
-     *            the checked
-     * @deprecated use SetCheckedBox checked= true/false instead
-     */
-    @Deprecated
-    @Step("SetCheckBox name=\"([^\"]*)\", checked=([^\"]*)")
-    public void setSetCheckBox(final String name, final String checked) {
-        throw new IllegalStateException("change code to use SetCheckedBox checked= true/false instead");
-        // logger.debug("About to set checkbox " + name + "to " + checked);
-        // webDriverContext().setCurrentElement(null);
-        // final WebElement elem = locator
-        // .findElementByPredicate(new CheckBoxPredicate(name.trim()));
-        //
-        // Assert.assertNotNull("expecting a radio buttin element with value"
-        // + name);
-        // webDriverContext().setCurrentElement(elem);
-        // final boolean val = Boolean.parseBoolean(checked.trim());
-        // setCheckboxValue(elem, val);
-    }
-
-
-    /**
-     * Sets the checkbox value.
-     * 
-     * @example
-     * @param checkboxField
-     *            the checkbox field
-     * @param value
-     *            the value
-     */
     protected void setCheckboxValue(final Element checkboxField, final boolean value) {
-        logger.debug("About to set checkbox " + checkboxField + "to " + (value ? "checked" : "not checked"));
+        LOG.debug("setCheckboxValue {} to {}", checkboxField, (value ? "checked" : "not checked"));
 
         checkboxField.perform().perform(new ElementAction() {
-
             public void doActionOn(final WebElement element) {
                 if (element.isSelected() && !value) {
                     element.click();

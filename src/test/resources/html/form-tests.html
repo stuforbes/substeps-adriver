@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Form tests</title>
+</head>
+<body>
+<script type="text/javascript">
+	function doCheckboxClick(checkbox){
+		document.getElementById('content').innerHTML = checkbox.id+' says: '+(checkbox.checked ? 'Is now checked' : 'Is not checked');
+	}
+	
+	function doRadioClick(radio){
+		document.getElementById('content').innerHTML = radio.id+' says: Is now checked';
+	}
+	
+	function doTextFieldChange(textfield){
+		document.getElementById('content').innerHTML = textfield.value ? (textfield.id+' says: '+textfield.value) : '';
+	}
+	
+	function doSelectChange(select){
+		document.getElementById('content').innerHTML = select.value != '' ? (select.id+' says: '+select.value+' is selected') : '';
+	}
+</script>
+<div id="top">
+	<div id="content"></div>
+
+	<input type="textbox" id="text-field-1" onkeyup="doTextFieldChange(this)"/>
+	
+	<select id="select-box-1" onchange="doSelectChange(this)">
+		<option value="">Not Selected</option>
+		<option value="option-1">Option 1</option>
+		<option value="option-2">Option 2</option>
+		<option value="option-3">Option 3</option>
+	</select>
+	
+	<input type="checkbox" id="checkbox-field-1" onclick="doCheckboxClick(this)">This is checkbox-1</input>
+	
+	<input type="radio" name="radio-button" id="radio-1" onclick="doRadioClick(this)">Radio 1</input>
+	<input type="radio" name="radio-button" id="radio-2" onclick="doRadioClick(this)">Radio 2</input>
+	
+</div>
+</div>
+</body>
+</html>

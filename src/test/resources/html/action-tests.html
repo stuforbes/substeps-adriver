@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>Action tests</title>
+<style type="text/css">
+	#content {
+		height:300px;
+		width:300px;
+		border: 1px solid black;
+	}
+</style>
+	
+<script type="text/javascript">
+
+	function handleLink(){
+		document.getElementById('content').innerHTML='The link has been clicked';
+		return false;
+	}
+	
+	function handleButton(){
+		document.getElementById('content').innerHTML='The button has been clicked';
+		return false;
+	}
+	
+	function handlePanelClick(){
+		document.getElementById('content').innerHTML='The panel has been left clicked';
+		return false;
+	}
+
+	function handleDoubleClick(){
+		document.getElementById('content').innerHTML='The panel has been double clicked';
+		return false;
+	}
+	
+	function handleClick(){
+		document.getElementById('content').innerHTML='The panel has been left clicked';
+		return false;
+	}
+	
+	function handleRightClick(){
+		document.getElementById('content').innerHTML='The panel has been right clicked';
+		return false;
+	}
+</script>
+</head>
+<body>
+<a id="link" onclick="handleLink()">This is a link</a>
+
+<button id="button" onclick="handleButton()">Button</button>
+
+<div id="panel" onclick="handlePanelClick()" onDblClick="handleDoubleClick()" oncontextmenu="handleRightClick()">
+	This is a panel that can handle clicks, double clicks and right clicks
+</div>
+
+<div id="content"></div>
+</body>
+</html>

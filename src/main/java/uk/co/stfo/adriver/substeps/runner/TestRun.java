@@ -1,9 +1,15 @@
 package uk.co.stfo.adriver.substeps.runner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.co.stfo.adriver.driver.Driver;
 import uk.co.stfo.adriver.element.Element;
+import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
 
 public class TestRun {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TestRun.class);
 
     private Driver driver;
     private Element currentElement;
@@ -42,11 +48,22 @@ public class TestRun {
     }
 
 
-    public void finaliseWebDriver() {
-        if (this.driver != null) {
-            this.currentElement = null;
+    public void finaliseWebDriver(final ADriverConfiguration configuration) {
+        if (this.driver != null && isQuitWebDriver(configuration)) {
+            LOG.debug("Closing web driver");
             this.driver.quit();
-            this.driver = null;
         }
+        this.currentElement = null;
+        this.driver = null;
+    }
+
+
+    private boolean isQuitWebDriver(final ADriverConfiguration configuration) {
+        if (configuration.getDriverType().isVisual()) {
+            return configuration.getCloseWebDriverStrategy().shouldClose(hasPassed());
+        }
+
+        LOG.debug("Web driver is not visual, it is safe to quit");
+        return true;
     }
 }

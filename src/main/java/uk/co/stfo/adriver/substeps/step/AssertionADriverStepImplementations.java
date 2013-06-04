@@ -11,23 +11,22 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.pagefactory.ByChained;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.stfo.adriver.element.Element;
-import uk.co.stfo.adriver.substeps.common.WebDriverSubstepsBy;
-import uk.co.stfo.adriver.substeps.runner.DefaultExecutionSetupTearDown;
+import uk.co.stfo.adriver.substeps.common.By2;
+import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
 
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.technophobia.substeps.model.SubSteps.Step;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
 
-@StepImplementations(requiredInitialisationClasses = DefaultExecutionSetupTearDown.class)
+@StepImplementations(requiredInitialisationClasses = DriverInitialisation.class)
 public class AssertionADriverStepImplementations extends AbstractADriverStepImplementations {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractADriverStepImplementations.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractADriverStepImplementations.class);
 
 
     public AssertionADriverStepImplementations() {
@@ -36,185 +35,198 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
 
 
     /**
-     * Check that the element with id has the text ....
+     * Find an element with the specified id that contains the expected text.
      * 
-     * @example AssertValue id msg_id text = "Hello World"
-     * @section Assertions
+     * @example AssertValue id an-id text = "Some inner text"
+     * @section Assertable
+     * 
      * @param id
-     *            the id
+     *            The id of the container element
      * @param expected
-     *            the expected
+     *            The inner text of the element
      */
     @Step("AssertValue id ([^\"]*) text = \"([^\"]*)\"")
     public void assertElementText(final String id, final String expected) {
-        logger.debug("Asserting element with id " + id + " has the text " + expected);
+        LOG.debug("AssertValue id {} text = \"{}\"", id, expected);
 
         currentElement(null);
 
-        final By byIdAndText = WebDriverSubstepsBy.ByIdAndText(id, expected);
+        final Element elem = driver().child(By.id(id));
 
-        final Element elem = webDriver().child(byIdAndText);
-
-        elem.assertThat().doesExist();
+        elem.assertThat().hasText(containsString(expected));
 
         currentElement(elem);
     }
 
 
     /**
-     * From the current element, apply the xpath and check to see if any of the
-     * children have the text ...
+     * Find a child of the current element, by using the xpath, and assert that
+     * it contains text
      * 
-     * @example AssertChildElementsContainText xpath="li//a" text = "Log Out"
-     * @section Assertions
+     * @example AssertChildElementsContainText xpath="//div[@class='main-div']"
+     *          text="The main content"
+     * @section Assertable
+     * 
      * @param xpath
-     *            the xpath
+     *            The xpath to locate the child of the current element.
      * @param text
-     *            the text
+     *            The inner text of the element to be verified
      */
     @Step("AssertChildElementsContainText xpath=\"([^\"]*)\" text=\"([^\"]*)\"")
     public void assertChildElementsContainText(final String xpath, final String text) {
-        logger.debug("Asserting chile element with xpath " + xpath + " has the text " + text);
+        LOG.debug("AssertChildElementsContainText xpath=\"{}\" text=\"{}\"", xpath, text);
 
-        currentElement().child(new ByChained(By.xpath(xpath), WebDriverSubstepsBy.ByText(text))).assertThat()
-                .doesExist();
+        currentElement().child(By2.combined(By.xpath(xpath), By2.text(text))).assertThat().doesExist();
     }
 
 
     /**
-     * Check that the current element has the expected text value
+     * Ensure the text of the current element is exactly the same as the
+     * expected text
      * 
-     * @example AssertCurrentElement text="Hello World!"
-     * @section Assertions
+     * @example AssertCurrentElement text="This is the text"
+     * @section Assertable
+     * 
      * @param expected
-     *            the expected text
+     *            The text that the elements inner text must equal
      */
     @Step("AssertCurrentElement text=\"([^\"]*)\"")
     public void assertTextInCurrentElement(final String expected) {
-        logger.debug("Asserting the current element has the text " + expected);
+        LOG.debug("AssertCurrentElement text=\"{}\"", expected);
 
         currentElement().assertThat().hasText(is(expected));
     }
 
 
     /**
-     * Check that the current element contains the specified text
+     * Ensure the text of the current element contains the expected text
      * 
-     * @example AssertCurrentElement text contains "Hello world"
-     * @section Assertions
+     * @example AssertCurrentElement text contains "This is the text"
+     * @section Assertable
+     * 
      * @param expected
-     *            the expected text
+     *            The text that the elements inner text must contain
      */
     @Step("AssertCurrentElement text contains \"([^\"]*)\"")
     public void assertTextInCurrentElementContains(final String expected) {
-        logger.debug("Asserting current element contains the text " + expected);
+        LOG.debug("AssertCurrentElement text contains \"{}\"", expected);
         currentElement().assertThat().hasText(containsString(expected));
     }
 
 
     /**
-     * Check that the current element has the specified attribute and value
+     * Assert that the current element contains the attribute identified by the
+     * "attribute" variable, and that it equals the "expected" value
      * 
-     * @example AssertCurrentElement attribute="class" value="icon32x32"
-     * @section Assertions
+     * @example AssertCurrentElement attribute="id" value="the-element-id"
+     * @section Assertable
      * 
      * @param attribute
-     *            the attribute name
+     *            The name of the attribute
      * @param expected
-     *            the expected value of the attribute
+     *            The value of the attribute
      */
     @Step("AssertCurrentElement attribute=\"([^\"]*)\" value=\"([^\"]*)\"")
     public void assertAttributeInCurrentElement(final String attribute, final String expected) {
-        logger.debug("Asserting current element has the attribute " + attribute + "with value " + expected);
+        LOG.debug("AssertCurrentElement attribute=\"{}\" value=\"{}\"", attribute, expected);
 
         currentElement().assertThat().hasAttribute(attribute, is(expected));
     }
 
 
     /**
-     * Check that any of the html tags have the specified text
+     * Assert that there is an element on the page that has a tag name
+     * identified by "tag", and inner text matching "text"
      * 
-     * @example AssertTagElementContainsText tag="ul" text="list item itext"
-     * @section Assertions
+     * @example AssertTagElementContainsText tag="p"
+     *          text="some paragraph content"
+     * @section Assertable
+     * 
      * @param tag
-     *            the tag
+     *            The tag name of the element
      * @param text
-     *            the text
+     *            The inner text of the element
      */
     @Step("AssertTagElementContainsText tag=\"([^\"]*)\" text=\"([^\"]*)\"")
     public void assertTagElementContainsText(final String tag, final String text) {
-        logger.debug("Asserting tag element " + tag + " has text " + text);
+        LOG.debug("AssertTagElementContainsText tag=\"{}\" text=\"{}\"", tag, text);
 
-        webDriver().child(new ByChained(By.tagName(tag), WebDriverSubstepsBy.ByText(text))).assertThat().doesExist();
+        driver().child(By2.combined(By.tagName(tag), By2.text(text))).assertThat().doesExist();
     }
 
 
     /**
-     * Check that any of the html tags have the specified attribute name and
-     * value
+     * Assert that there is an element on the page that has a tag name
+     * identified by "tag", and an attribute with name "attributeName" that has
+     * a value "attributeValue"
      * 
-     * @example AssertTagElementContainsText tag="ul" attributeName="class"
-     *          attributeValue="a_list"
-     * @section Assertions
+     * @example AssertTagElementContainsAttribute tag="img" attributeName="src"
+     *          attributeValue="image1.jpg"
+     * @section Assertable
+     * 
      * @param tag
-     *            the tag
+     *            The tag name of the element
      * @param attributeName
-     *            the attribute name
+     *            The name of the attribute
      * @param attributeValue
-     *            the attribute value
+     *            The value of the attribute
      */
     @Step("AssertTagElementContainsAttribute tag=\"([^\"]*)\" attributeName=\"([^\"]*)\" attributeValue=\"([^\"]*)\"")
     public void assertTagElementContainsAttribute(final String tag, final String attributeName,
             final String attributeValue) {
-        logger.debug("Asserting tag element " + tag + " has attribute " + attributeName + " with value "
-                + attributeValue);
+        LOG.debug("AssertTagElementContainsAttribute tag=\"{}\" attributeName=\"{}\" attributeValue=\"{}\"",
+                new Object[] { tag, attributeName, attributeValue });
 
-        webDriver().child(WebDriverSubstepsBy.ByTagAndAttribute(tag, attributeName, attributeValue)).assertThat()
+        driver().child(By2.combined(By.tagName(tag), By2.attribute(attributeName, attributeValue))).assertThat()
                 .doesExist();
     }
 
 
     /**
-     * Check that the page title is ....
+     * Assert that the page title equals the expected title
      * 
-     * @example AssertPageTitle is "My Home Page"
-     * @section Assertions
+     * @example AssertPageTitle is "About Page"
      * @param expectedTitle
-     *            the expected title
+     *            The expected page title
      */
     @Step("AssertPageTitle is \"([^\"]*)\"")
     public void assertPageTitle(final String expectedTitle) {
-        logger.debug("Asserting the page title is " + expectedTitle);
-        webDriver().assertThat().title(is(expectedTitle));
+        LOG.debug("AssertPageTitle is \"{}\"", expectedTitle);
+        driver().assertThat().title(is(expectedTitle));
     }
 
 
     /**
-     * Simple text search on page source
+     * Assert that the raw page source contains the expected text
      * 
-     * @example AssertPageSourceContains "foobar"
-     * 
+     * @example AssertPageSourceContains "some page content"
      * @param expected
-     *            Some text you expect to appear on the page
+     *            The text that is expected to be on the page
      */
     @Step("AssertPageSourceContains \"([^\"]*)\"")
     public void pageSourceContains(final String expected) {
-        logger.debug("Checking page source for expeted content [" + expected + "]");
+        LOG.debug("AssertPageSourceContains \"{}\"", expected);
 
-        webDriver().assertThat().pageSource(containsString(expected));
+        driver().assertThat().pageSource(containsString(expected));
     }
 
 
     /**
-     * Check that the current element, a checkbox is checked or not
+     * Asserts that the current element is a checkbox, and that it's checked
+     * state matches the "checkedString" variable, which will either be "true"
+     * or "false"
      * 
-     * @example AssertCheckBox checked=true/false
-     * @section Assertions
+     * @example AssertCheckBox checked="true"
+     * @section Assertable
+     * 
      * @param checkedString
-     *            whether the radio button is checked or not
+     *            Whether the checkbox should be checked or not. Will either be
+     *            "true" or "false"
      */
     @Step("AssertCheckBox checked=\"?([^\"]*)\"?")
     public void assertCheckBoxIsChecked(final String checkedString) {
+
+        LOG.debug("AssertCheckBox checked=\"{}\"", checkedString);
 
         // check that the current element is not null and is a radio btn
         currentElement().assertThat().matches(new BaseMatcher<WebElement>() {
@@ -242,15 +254,20 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
 
 
     /**
-     * Check that the current element, a radio button, is checked or not
+     * Asserts that the current element is a radio, and that it's checked state
+     * matches the "checkedString" variable, which will either be "true" or
+     * "false"
      * 
-     * @example AssertRadioButton checked=true/false
-     * @section Assertions
+     * @example AssertRadioButtonIsChecked checked="true"
+     * @section Assertable
+     * 
      * @param checkedString
-     *            whether the radio button is checked or not
+     *            Whether the radio should be checked or not. Will either be
+     *            "true" or "false"
      */
     @Step("AssertRadioButton checked=\"?([^\"]*)\"?")
     public void assertRadioButtonIsChecked(final String checkedString) {
+        LOG.debug("AssertRadioButton checked=\"{}\"", checkedString);
 
         // check that the current element is not null and is a radio btn
         currentElement().assertThat().matches(new BaseMatcher<WebElement>() {
@@ -278,106 +295,54 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
 
 
     /**
-     * Check that the current element has the specified attributes
+     * Asserts that the element identified by id is not empty (ie. contains some
+     * text)
      * 
-     * @example AssertCurrentElement has
-     *          attributes=[type="submit",value="Search"]
-     * @section Assertions
-     * @param attributeString
-     *            comma separated list of attributes and quoted values
-     */
-
-    @Step("AssertCurrentElement has attributes=\\[(.*)\\]")
-    public void assertCurrentElementHasAttributes(final String attributeString) {
-
-        currentElement().assertThat().matches(new BaseMatcher<WebElement>() {
-
-            public boolean matches(final Object obj) {
-                final WebElement element = (WebElement) obj;
-                final Map<String, String> expectedAttributes = WebDriverSubstepsBy.convertToMap(attributeString);
-
-                return elementHasExpectedAttributes(element, expectedAttributes);
-            }
-
-
-            public void describeTo(final Description description) {
-                description.appendText("Element has attributes ");
-                description.appendText(attributeString);
-            }
-        });
-    }
-
-
-    /**
-     * Utility method to check that an element is of a particular tag and type
+     * @example AssertNotEmpty id="email-address"
+     * @section Assertable
      * 
-     * @param elem
-     * @param tag
-     * @param type
-     */
-    protected boolean checkElementIs(final WebElement elem, final String tag, final String type) {
-
-        if (elem != null) {
-            if (elem.getTagName() != null && elem.getTagName().compareToIgnoreCase(tag) == 0) {
-
-                if (elem.getAttribute("type") != null && elem.getAttribute("type").compareToIgnoreCase(type) == 0) {
-                    return true;
-                } else {
-                    logger.debug("Unexpected type attribute. Expected {}, but got {}", type, elem.getAttribute("type"));
-                }
-            } else {
-                logger.debug("Unexpected tag. Expected {}, but got {}", tag, elem.getTagName());
-            }
-        } else {
-            logger.debug("Element was null");
-        }
-        return false;
-    }
-
-
-    /**
-     * Asserts that an element (identified by ID) eventually gets some text
-     * inserted into it (by JavaScript, probably)
-     * 
-     * @example AssertEventuallyNotEmpty mySpan
      * @param elementId
-     *            HTML ID of element
+     *            The id of the html element to be tested
      */
-    @Step("AssertEventuallyNotEmpty id=\"([^\"]*)\"")
-    public void assertEventuallyNotEmpty(final String elementId) {
-        webDriver().child(By.id(elementId)).assertThat().hasText(is(not("")));
+    @Step("AssertNotEmpty id=\"([^\"]*)\"")
+    public void assertNotEmpty(final String elementId) {
+        LOG.debug("AssertNotEmpty id=\"{}\"", elementId);
+        driver().child(By.id(elementId)).assertThat().hasText(is(not("")));
     }
 
 
     /**
-     * Asserts that an element (identified by ID) eventually gets some specific
-     * text inserted into it (by JavaScript, probably)
+     * Asserts that the element identified by id contains the specified text
      * 
-     * @example AssertEventuallyContains mySpanId "text I eventually expect"
-     * @section Assertions
+     * @example AssertContains email-address "email@example.com"
+     * @section Assertable
+     * 
      * @param elementId
-     *            HTML ID of element
+     *            The id of the html element to be tested
      * @param text
-     *            the expected text
+     *            The text that the element has to contain
      */
-    @Step("AssertEventuallyContains ([^\"]*) \"([^\"]*)\"")
-    public void assertEventuallyContains(final String elementId, final String text) {
-
-        webDriver().child(By.id(elementId)).assertThat().hasText(is(text));
+    @Step("AssertContains ([^\"]*) \"([^\"]*)\"")
+    public void assertContains(final String elementId, final String text) {
+        LOG.debug("AssertContains {} \"{}\"", elementId, text);
+        driver().child(By.id(elementId)).assertThat().hasText(is(text));
 
     }
 
 
     /**
-     * Assert that the specified text is not found within the page
+     * Asserts that the text is not present in the page source
      * 
-     * @example AssertNotPresent text="undesirable text"
-     * @section Assertions
+     * @example AssertNotPresent text="This should not be in the page source"
+     * @section Assertable
+     * 
      * @param text
+     *            The text we do not want to appear in the page source
      */
     @Step("AssertNotPresent text=\"([^\"]*)\"")
     public void assertNotPresent(final String text) {
-        webDriver().assertThat().pageSource(not(containsString(text)));
+        LOG.debug("AssertNotPresent text=\"{}\"", text);
+        driver().assertThat().pageSource(not(containsString(text)));
     }
 
 
@@ -395,5 +360,31 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
 
         final MapDifference<String, String> difference = Maps.difference(expectedAttributes, actualValues);
         return difference.areEqual();
+    }
+
+
+    /**
+     * Utility method to check that an element is of a particular tag and type
+     * 
+     * @param elem
+     * @param tag
+     * @param type
+     */
+    protected boolean checkElementIs(final WebElement elem, final String tag, final String type) {
+        if (elem != null) {
+            if (elem.getTagName() != null && elem.getTagName().compareToIgnoreCase(tag) == 0) {
+
+                if (elem.getAttribute("type") != null && elem.getAttribute("type").compareToIgnoreCase(type) == 0) {
+                    return true;
+                } else {
+                    LOG.debug("Unexpected type attribute. Expected {}, but got {}", type, elem.getAttribute("type"));
+                }
+            } else {
+                LOG.debug("Unexpected tag. Expected {}, but got {}", tag, elem.getTagName());
+            }
+        } else {
+            LOG.debug("Element was null");
+        }
+        return false;
     }
 }

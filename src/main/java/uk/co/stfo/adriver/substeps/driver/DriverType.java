@@ -1,16 +1,22 @@
 package uk.co.stfo.adriver.substeps.driver;
 
-import org.openqa.selenium.WebDriver;
+public enum DriverType {
 
-/**
- * Created with IntelliJ IDEA.
- * User: dmoss
- * Date: 14/03/13
- * Time: 16:18
- * To change this template use File | Settings | File Templates.
- */
-public interface DriverType {
-    boolean isVisual();
-    
-    WebDriver createWebDriverFrom();
+    FIREFOX(true), //
+    PHANTOMJS(false), //
+    HTMLUNIT(false), //
+    CHROME(true), //
+    IE(true);
+
+    private final boolean visual;
+
+
+    private DriverType(final boolean visual) {
+        this.visual = visual;
+    }
+
+
+    public boolean isVisual() {
+        return visual;
+    }
 }

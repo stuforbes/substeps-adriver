@@ -4,12 +4,12 @@ import com.google.common.base.Supplier;
 import com.technophobia.substeps.execution.node.IExecutionNode;
 import com.technophobia.substeps.runner.INotifier;
 
-public class TestFailureListener implements INotifier {
+public class UpdateTestRunOnFailureNotifier implements INotifier {
 
     private final Supplier<TestRun> testRunSupplier;
 
 
-    public TestFailureListener(final Supplier<TestRun> testRunSupplier) {
+    public UpdateTestRunOnFailureNotifier(final Supplier<TestRun> testRunSupplier) {
         super();
         this.testRunSupplier = testRunSupplier;
     }

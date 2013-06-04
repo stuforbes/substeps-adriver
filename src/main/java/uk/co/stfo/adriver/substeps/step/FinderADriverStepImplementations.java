@@ -1,23 +1,23 @@
 package uk.co.stfo.adriver.substeps.step;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.support.pagefactory.ByChained;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.co.stfo.adriver.element.Element;
-import uk.co.stfo.adriver.substeps.common.WebDriverSubstepsBy;
-import uk.co.stfo.adriver.substeps.runner.DefaultExecutionSetupTearDown;
+import uk.co.stfo.adriver.substeps.common.By2;
+import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
+import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
 import uk.co.stfo.adriver.substeps.runner.TestRun;
 
 import com.google.common.base.Supplier;
 import com.technophobia.substeps.model.SubSteps.Step;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
 
-@StepImplementations(requiredInitialisationClasses = DefaultExecutionSetupTearDown.class)
+@StepImplementations(requiredInitialisationClasses = DriverInitialisation.class)
 public class FinderADriverStepImplementations extends AbstractADriverStepImplementations {
 
-    private static final Logger logger = LoggerFactory.getLogger(FinderADriverStepImplementations.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FinderADriverStepImplementations.class);
 
 
     public FinderADriverStepImplementations() {
@@ -25,109 +25,143 @@ public class FinderADriverStepImplementations extends AbstractADriverStepImpleme
     }
 
 
-    public FinderADriverStepImplementations(final Supplier<TestRun> testRunSupplier) {
-        super(testRunSupplier);
+    public FinderADriverStepImplementations(final Supplier<TestRun> testRunSupplier,
+            final Supplier<ADriverConfiguration> configurationSupplier) {
+        super(testRunSupplier, configurationSupplier);
     }
 
 
     /**
-     * Find an element by it's ID
+     * Find an html element by its id attribute, and store as the current
+     * element
      * 
-     * @example FindById username
-     * @section Location
+     * @example FindById login-button
+     * @section Locatable
      * 
      * @param id
-     *            the id
-     * @return the web element
+     *            The id of the html element
+     * @return The {@link Element} placeholder with this id
      */
     @Step("FindById ([^\"]*)")
     public Element findById(final String id) {
-
-        logger.debug("Looking for item with id " + id);
+        LOG.debug("FindById {}", id);
         return storeCurrentElementBy(By.id(id));
     }
 
 
     /**
-     * Find an id by xpath
+     * Find an html element by applying the xpath, and store as the current
+     * element
      * 
-     * @example FindByXpath
-     * @section Location
+     * @example FindByXpath //div[@class='panel']
+     * @section Locatable
      * 
      * @param xpath
-     *            the xpath
-     * @return
+     *            The xpath to locate the html element
+     * @return The {@link Element} placeholder with this xpath
      */
     @Step("FindByXpath ([^\"]*)")
     public Element findByXpath(final String xpath) {
-        logger.debug("Looking for item with xpath " + xpath);
+        LOG.debug("FindByXpath {}", xpath);
 
         return storeCurrentElementBy(By.xpath(xpath));
     }
 
 
     /**
-     * Find an element using the name attribute of the element
+     * Find an html element by its name attribute, and store as the current
+     * element
      * 
-     * @example FindByName "named field"
-     * @section Location
+     * @example FindByName surname-field
+     * @section Locatable
      * 
      * @param name
-     *            the name
-     * @return the web element
+     *            The name of the html element
+     * @return The {@link Element} placeholder with this name
      */
     @Step("FindByName \"?([^\"]*)\"?")
     public Element findByName(final String name) {
-        logger.debug("Looking for item with name " + name);
+        LOG.debug("FindByName {}", name);
         return storeCurrentElementBy(By.name(name));
     }
 
 
+    /**
+     * Find an html element by its link text attribute, and store as the current
+     * element
+     * 
+     * @example FindByLinkText logout
+     * @section Locatable
+     * 
+     * @param linkText
+     *            The link text of the html element
+     * @return The {@link Element} placeholder with this link text
+     */
+    @Step("FindByLinkText ([^\"]*)")
     public Element findByLinkText(final String linkText) {
-        logger.debug("Looking for item with link text " + linkText);
+        LOG.debug("FindByLinkText {}", linkText);
         return storeCurrentElementBy(By.linkText(linkText));
     }
 
 
+    /**
+     * Find an html element by its tag name, and a specified attribute name and
+     * value
+     * 
+     * @example FindByTagAndAttribute tag=input attributeName=type
+     *          attributeValue=text
+     * @section Locatable
+     * 
+     * @param tag
+     *            The tag name of the html element
+     * @param attributeName
+     *            The name of the attribute
+     * @param attributeValue
+     *            The value of the attribute
+     * @return The {@link Element} placeholder with this tag, and attribute
+     *         name/value
+     */
+    @Step("FindByTagAndAttribute tag=([^\"]*) attributeName=([^\"]*) attributeValue=([^\"]*)")
     public Element findByTagAndAttribute(final String tag, final String attributeName, final String attributeValue) {
-        logger.debug("Looking for item with tag " + tag + " and attribute " + attributeName + "=" + attributeValue);
-        return storeCurrentElementBy(WebDriverSubstepsBy.ByTagAndAttribute(tag, attributeName, attributeValue));
+        LOG.debug("FindByTagAndAttribute tag={} attributeName={} attributeValue={}", new Object[] { tag, attributeName,
+                attributeValue });
+        return storeCurrentElementBy(By2.combined(By.tagName(tag), By2.attribute(attributeName, attributeValue)));
     }
 
 
     /**
-     * Finds an element on the page with the specified tag and text
+     * Find an html element by its tag name, and containing the text
      * 
-     * @example FindTagElementContainingText tag="ul" text="list item itext"
-     * @section Location
+     * @example FindTagElementContainingText tag="p" text="Some paragraph text"
+     * @section Locatable
+     * 
      * @param tag
-     *            the tag
+     *            The tag name of the html element
      * @param text
-     *            the text
-     * @return
+     *            The text that the element must contain
+     * @return The {@link Element} placeholder with this tag and text
      */
     @Step("FindTagElementContainingText tag=\"([^\"]*)\" text=\"([^\"]*)\"")
     public Element findTagElementContainingText(final String tag, final String text) {
-        logger.debug("Finding tag element " + tag + "and asserting has text " + text);
+        LOG.debug("FindTagElementContainingText tag={} text={}", tag, text);
 
-        return storeCurrentElementBy(WebDriverSubstepsBy.ByTagAndWithText(tag, text, true));
+        return storeCurrentElementBy(By2.combined(By.tagName(tag), By2.text(text)));
     }
 
 
     /**
-     * Finds an element that is a child of the current element using the name
-     * attribute, another Find method should be used first
+     * Find a child of the current element with the specified name
      * 
-     * @example FindChild ByName name="child name"
-     * @section Location
+     * @example FindChild ByName name="child-name"
+     * @section Locatable
      * 
      * @param name
-     *            the name
-     * @return the web element
+     *            The name of the child element
+     * @return The {@link Element} placeholder with this id
      */
     @Step("FindChild ByName name=\"?([^\"]*)\"?")
     public Element findChildByName(final String name) {
-        logger.debug("Looking for child with name " + name);
+        LOG.debug("FindChild ByName name {}", name);
 
         final Element child = currentElement().child(By.name(name));
         currentElement(child);
@@ -137,115 +171,48 @@ public class FinderADriverStepImplementations extends AbstractADriverStepImpleme
 
 
     /**
-     * Finds an element that is a child of the current element using the tag
-     * name and specified attributes, another Find method should be used first
+     * Find a checkbox element inside a tag with the specified tag name, that
+     * has inner text matching label
      * 
-     * @example FindChild ByTagAndAttributes tag="input"
-     *          attributes=[type="submit",value="Search"]
-     * @section Location
-     * 
-     * @param tag
-     *            the tag
-     * @param attributeString
-     *            the attribute string
-     * @return the web element
-     */
-    @Step("FindChild ByTagAndAttributes tag=\"?([^\"]*)\"? attributes=\\[(.*)\\]")
-    public Element findChildByTagAndAttributes(final String tag, final String attributeString) {
-        logger.debug("Looking for child with tag " + tag + " and attributes " + attributeString);
-
-        final Element child = currentElement().child(WebDriverSubstepsBy.ByTagAndAttributes(tag, attributeString));
-
-        currentElement(child);
-
-        return child;
-    }
-
-
-    /**
-     * Finds a checkbox that is a child of the specified tag, that contains the
-     * specified text; eg.
-     * 
-     * <pre>
-     * <label>
-     *  <input type="checkbox" name="checkbox_name" value="yeah"/>a checkbox <span>label</span>
-     * </label>
-     * </pre>
-     * 
-     * @example FindCheckbox inside tag="label" with label="a checkbox label>"
-     * 
-     * @section Location
+     * @example FindCheckbox inside tag="form" with label="This is checkbox 1"
+     * @section Locatable
      * 
      * @param tag
-     *            the tag
+     *            The tag name of the container element
      * @param label
-     *            the checkbox label
-     * @return the web element
+     *            The text inside the checkbox element
+     * @return The {@link Element} placeholder with this tag and label
      */
     @Step("FindCheckbox inside tag=\"?([^\"]*)\"? with label=\"([^\"]*)\"")
     public Element findCheckBox(final String tag, final String label) {
-
+        LOG.debug("FindCheckbox inside tag={} with label={}", tag, label);
         return findInputInsideTag(tag, label, "checkbox");
 
     }
 
 
-    // todo variant that also has attributes for the tag
-
     /**
-     * Finds a radiobutton that is a child of the specified tag, that contains
-     * the specified text; eg.
+     * Find a radio element inside a tag with the specified tag name, that has
+     * inner text matching label
      * 
-     * <pre>
-     * <label>
-     *  <input type="radio" name="radio_name" value="yeah"/>a radio <span>label</span>
-     * </label>
-     * </pre>
-     * 
-     * @example FindRadioButton inside tag="label" with label="a radio label>"
-     * 
-     * @section Location
+     * @example FindRadioButton inside tag="form" with label="This is radio 2"
+     * @section Locatable
      * 
      * @param tag
-     *            the tag
+     *            The tag name of the container element
      * @param label
-     *            the radio button label
-     * @return the web element
+     *            The text inside the radio element
+     * @return The {@link Element} placeholder with this tag and label
      */
     @Step("FindRadioButton inside tag=\"?([^\"]*)\"? with label=\"([^\"]*)\"")
     public Element findRadioButton(final String tag, final String label) {
-
+        LOG.debug("FindRadioButton inside tag={} with label={}", tag, label);
         return findInputInsideTag(tag, label, "radio");
     }
 
 
-    /**
-     * Find an element by tag name and a set of attributes and corresponding
-     * values
-     * 
-     * @param tag
-     *            the tag
-     * @param attributeString
-     *            the attribute string
-     * @return the web element
-     * @example FindByTagAndAttributes tag="input"
-     *          attributes=[type="submit",value="Search"]
-     * @section Location
-     */
-    @Step("FindByTagAndAttributes tag=\"?([^\"]*)\"? attributes=\\[(.*)\\]")
-    public Element findByTagAndAttributes(final String tag, final String attributeString) {
-        logger.debug("Looking for item with tag " + tag + " and attributes " + attributeString);
-
-        final Element element = webDriver().child(WebDriverSubstepsBy.ByTagAndAttributes(tag, attributeString));
-
-        currentElement(element);
-
-        return element;
-    }
-
-
     private Element storeCurrentElementBy(final By by) {
-        final Element element = webDriver().child(by);
+        final Element element = driver().child(by);
         currentElement(element);
 
         return element;
@@ -253,8 +220,9 @@ public class FinderADriverStepImplementations extends AbstractADriverStepImpleme
 
 
     private Element findInputInsideTag(final String tag, final String label, final String inputType) {
-        final Element element = webDriver().child(new ByChained(By.tagName(tag), WebDriverSubstepsBy.ByText(label)))
-                .child(WebDriverSubstepsBy.ByTagAndAttribute("input", "type", inputType));
+        final Element parentElement = driver().child(By2.combined(By.tagName(tag), By2.text(label)));
+        final Element element = parentElement
+                .child(By2.combined(By.tagName("input"), By2.attribute("type", inputType)));
 
         currentElement(element);
 

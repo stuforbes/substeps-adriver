@@ -6,129 +6,171 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.co.stfo.adriver.substeps.configuration.WebdriverSubstepsConfiguration;
-import uk.co.stfo.adriver.substeps.runner.DefaultExecutionSetupTearDown;
+import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
+import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
 import uk.co.stfo.adriver.substeps.runner.TestRun;
 
 import com.google.common.base.Supplier;
 import com.technophobia.substeps.model.SubSteps.Step;
 import com.technophobia.substeps.model.SubSteps.StepImplementations;
 
-@StepImplementations(requiredInitialisationClasses = DefaultExecutionSetupTearDown.class)
+@StepImplementations(requiredInitialisationClasses = DriverInitialisation.class)
 public class ActionADriverStepImplementations extends AbstractADriverStepImplementations {
 
-    private static final Logger logger = LoggerFactory.getLogger(ActionADriverStepImplementations.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ActionADriverStepImplementations.class);
 
     private final FinderADriverStepImplementations locator;
 
 
     public ActionADriverStepImplementations() {
-        super();
-        this.locator = new FinderADriverStepImplementations(testRunSupplier());
+        this.locator = new FinderADriverStepImplementations();
     }
 
 
-    public ActionADriverStepImplementations(final Supplier<TestRun> testRunSupplier) {
-        super(testRunSupplier);
-        this.locator = new FinderADriverStepImplementations(testRunSupplier);
+    public ActionADriverStepImplementations(final Supplier<TestRun> testRunSupplier,
+            final Supplier<ADriverConfiguration> configurationSupplier) {
+        super(testRunSupplier, configurationSupplier);
+        this.locator = new FinderADriverStepImplementations(testRunSupplier, configurationSupplier);
     }
 
 
     /**
-     * Navigate to a url, if the url begins with http or file, the url will be
-     * used as is, if a relative url is specified then it will be prepended with
-     * the base url property
+     * Navigates to the specified url. If the url is absolute (is prefixed with
+     * file or http), the browser is redirected to that url. If not, the
+     * configured base url (see base.url in default.properties) is prefixed.
      * 
-     * @example NavigateTo /myApp (will navigate to http://localhost/myApp if
-     *          base.url is set to http://localhost)
-     * @section Location
+     * @example NavigateTo /login
+     * @section Navigation
      * 
      * @param url
-     *            the url
+     *            The url to navigate to
      */
     @Step("NavigateTo ([^\"]*)")
     public void navigateTo(final String url) {
-        logger.debug("About to navigate to " + url);
+        LOG.debug("NavigateTo {}", url);
 
         if (url.startsWith("file") || url.startsWith("http")) {
-            webDriver().navigateTo(url);
+            driver().navigateTo(url);
         } else {
-            webDriver().navigateTo(normaliseURL(url));
+            driver().navigateTo(normaliseURL(url));
         }
     }
 
 
     /**
-     * Find an element by id, then click it.
+     * Clicks on an Html element with the specified id attribute
      * 
-     * @example ClickById login
-     * @section Clicks
+     * @example ClickById my-link
+     * @section Clickable
      * 
      * @param id
-     *            the id
+     *            The id of the element to be clicked
      */
     @Step("ClickById ([^\"]*)")
     public void clickById(final String id) {
-        logger.debug("About to click item with id " + id);
+        LOG.debug("clickById {}", id);
         this.locator.findById(id);
         click();
     }
 
 
     /**
-     * Click (the current element)
+     * Clicks on the currently selected element (Assumes that an element has
+     * been located and saved in the {@link ExecutionContext}
      * 
      * @example Click
-     * @section Clicks
+     * @section Clickable
+     * 
      */
     @Step("Click")
     public void click() {
-        logger.debug("About to click on current element");
+        LOG.debug("Click");
         currentElement().perform().click();
     }
 
 
     /**
-     * Click the link "(....)" as it appears on the page
+     * Clicks on a link that has the specified linkText
      * 
-     * @example ClickLink "Contracts"
-     * @section Clicks
+     * @example ClickLink "Logout"
+     * @section Clickable
+     * 
      * @param linkText
-     *            the link text
+     *            The text contained in the link
      */
     @Step("ClickLink \"([^\"]*)\"")
     public void clickLink(final String linkText) {
-        logger.debug("About to click link with text " + linkText);
+        LOG.debug("ClickLink \"{}\"", linkText);
         locator.findByLinkText(linkText).perform().click();
     }
 
 
     /**
-     * Click a button that has the text...
+     * Click on a button containing the text buttonText
      * 
-     * @example ClickButton submit
-     * @section Clicks
+     * @example ClickButton Register
+     * @section Clickable
+     * 
      * @param buttonText
-     *            the button text
+     *            The text on the button to be clicked
      */
     @Step("ClickButton ([^\"]*)")
     public void clickButton(final String buttonText) {
-        logger.debug("About to click button with text " + buttonText);
+        LOG.debug("ClickButton {}", buttonText);
 
         locator.findTagElementContainingText("button", buttonText.trim()).perform().click();
     }
 
 
+    /**
+     * Click on the submit button containing the text buttonText
+     * 
+     * @example ClickSubmitButton Submit
+     * @section Clickable
+     * 
+     * @param buttonText
+     *            The text on the submit button to be clicked
+     */
     @Step("ClickSubmitButton \"([^\"]*)\"")
     public void clickInput(final String buttonText) {
-        logger.debug("About to click submit button with text " + buttonText);
+        LOG.debug("ClickSubmitButton \"{}\"", buttonText);
 
         locator.findByTagAndAttribute("input", "value", buttonText).perform().click();
     }
 
 
+    /**
+     * Performs a double click on the current element (Assumes that an element
+     * has been located and saved in the {@link ExecutionContext}.
+     * 
+     * @example PerformDoubleClick
+     * @section Clickable
+     * 
+     */
+    @Step("PerformDoubleClick")
+    public void doDoubleClick() {
+        LOG.debug("PerformDoubleClick");
+        currentElement().perform().doubleClick();
+    }
+
+
+    /**
+     * Performs a context click on the current element (Assumes that an element
+     * has been located and saved in the {@link ExecutionContext}.
+     * 
+     * @example PerformContextClick
+     * @section Clickable
+     * 
+     */
+    @Step("PerformContextClick")
+    public void performContextClick() {
+        LOG.debug("PerformContextClick");
+        currentElement().perform().rightClick();
+    }
+
+
     private String normaliseURL(final String relativeURL) {
-        return normalise(WebdriverSubstepsConfiguration.baseURL() + relativeURL);
+        return normalise(configuration().getBaseUrl() + relativeURL);
     }
 
 
@@ -138,33 +180,5 @@ public class ActionADriverStepImplementations extends AbstractADriverStepImpleme
         } catch (final URISyntaxException ex) {
             throw new IllegalStateException("The url " + urlToNormalise + " is invalid.", ex);
         }
-    }
-
-
-    /**
-     * Performs a double click on the current element (set with a previous Find
-     * method).
-     * 
-     * @example PerformDoubleClick
-     * @section Clicks
-     * 
-     */
-    @Step("PerformDoubleClick")
-    public void doDoubleClick() {
-        currentElement().perform().doubleClick();
-    }
-
-
-    /**
-     * Performs a context click (typically right click, unless this has been
-     * changed by the user) on the current element.
-     * 
-     * @example PerformContextClick
-     * @section Clicks
-     * 
-     */
-    @Step("PerformContextClick")
-    public void performContextClick() {
-        currentElement().perform().rightClick();
     }
 }

@@ -2,7 +2,8 @@ package uk.co.stfo.adriver.substeps.step;
 
 import uk.co.stfo.adriver.driver.Driver;
 import uk.co.stfo.adriver.element.Element;
-import uk.co.stfo.adriver.substeps.runner.DefaultExecutionSetupTearDown;
+import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
+import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
 import uk.co.stfo.adriver.substeps.runner.TestRun;
 
 import com.google.common.base.Supplier;
@@ -10,15 +11,18 @@ import com.google.common.base.Supplier;
 public abstract class AbstractADriverStepImplementations {
 
     private final Supplier<TestRun> testRunSupplier;
+    private final Supplier<ADriverConfiguration> configurationSupplier;
 
 
     public AbstractADriverStepImplementations() {
-        this(DefaultExecutionSetupTearDown.currentTestRun());
+        this(DriverInitialisation.currentTestRun(), DriverInitialisation.configuration());
     }
 
 
-    public AbstractADriverStepImplementations(final Supplier<TestRun> testRunSupplier) {
+    public AbstractADriverStepImplementations(final Supplier<TestRun> testRunSupplier,
+            final Supplier<ADriverConfiguration> configurationSupplier) {
         this.testRunSupplier = testRunSupplier;
+        this.configurationSupplier = configurationSupplier;
     }
 
 
@@ -27,7 +31,7 @@ public abstract class AbstractADriverStepImplementations {
     }
 
 
-    protected Driver webDriver() {
+    protected Driver driver() {
         return testRunSupplier.get().webDriver();
     }
 
@@ -39,5 +43,10 @@ public abstract class AbstractADriverStepImplementations {
 
     protected void currentElement(final Element currentElement) {
         testRunSupplier.get().currentElement(currentElement);
+    }
+
+
+    protected ADriverConfiguration configuration() {
+        return configurationSupplier.get();
     }
 }
