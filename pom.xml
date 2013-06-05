@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.co.stfo</groupId>
 	<artifactId>substeps-adriver</artifactId>
@@ -24,7 +25,7 @@
 		<developerConnection>scm:git:git@github.com:stuforbes/substeps-adriver.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
-	
+
 	<developers>
 		<developer>
 			<id>stuforbes</id>
@@ -34,7 +35,7 @@
 			</roles>
 		</developer>
 	</developers>
-	
+
 	<properties>
 		<selenium.version>2.31.0</selenium.version>
 
@@ -46,7 +47,7 @@
 		<substeps.runners.version>1.1.0</substeps.runners.version>
 		<substeps.glossary.version>1.1.0</substeps.glossary.version>
 	</properties>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -89,7 +90,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>
 		</plugins>
 	</build>
 
@@ -175,7 +176,7 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.jmock</groupId>
 			<artifactId>jmock</artifactId>
@@ -193,12 +194,12 @@
 	</dependencies>
 
 	<distributionManagement>
-                <repository>
-                        <id>local-repo</id>
-                        <url>${local.repo}</url>
-                        <layout>default</layout>
-                </repository>
-        </distributionManagement>
+		<repository>
+			<id>local-repo</id>
+			<url>${local.repo}</url>
+			<layout>default</layout>
+		</repository>
+	</distributionManagement>
 
 	<profiles>
 		<profile>
@@ -214,7 +215,10 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.1</version>
+						<version>2.0</version>
+						<configuration>
+							<mavenExecutorId>forked-path</mavenExecutorId>
+						</configuration>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -259,7 +263,8 @@
 								<param>uk.co.stfo.adriver.substeps.step.FormADriverStepImplementations</param>
 							</stepImplementationClassNames>
 
-							<glossaryPublisher implementation="com.technophobia.substeps.glossary.JsonSubstepsPublisher">
+							<glossaryPublisher
+								implementation="com.technophobia.substeps.glossary.JsonSubstepsPublisher">
 								<outputFile>${project.build.directory}/stepimplementations.json</outputFile>
 							</glossaryPublisher>
 
