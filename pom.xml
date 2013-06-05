@@ -11,11 +11,32 @@
 	<description>A-Driver alternative to Webdriver SubSteps</description>
 
 
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
+	<scm>
+		<connection>scm:git:git@github.com:stuforbes/substeps-adriver.git</connection>
+		<url>scm:git:git@github.com:stuforbes/substeps-adriver.git</url>
+		<developerConnection>scm:git:git@github.com:stuforbes/substeps-adriver.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+	
+	<developers>
+		<developer>
+			<id>stuforbes</id>
+			<name>Stu Forbes</name>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+	
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
 		<selenium.version>2.31.0</selenium.version>
 
 		<hamcrest.version>1.3</hamcrest.version>
@@ -25,9 +46,40 @@
 		<substeps.core.version>1.1.0</substeps.core.version>
 		<substeps.runners.version>1.1.0</substeps.runners.version>
 		<substeps.glossary.version>1.1.0</substeps.glossary.version>
-
-		<guava.version>10.0</guava.version>
 	</properties>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.8</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<showDeprecation>true</showDeprecation>
+					<showWarnings>true</showWarnings>
+					<fork>true</fork>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 	<dependencies>
 		<dependency>
@@ -128,51 +180,42 @@
 
 	</dependencies>
 
-	<build>
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-
-		</plugins>
-
-
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.technophobia.substeps
-										</groupId>
-										<artifactId>
-											substeps-glossary-builder
-										</artifactId>
-										<versionRange>
-											[1.1.0,)
-										</versionRange>
-										<goals>
-											<goal>generate-docs</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+	<distributionManagement>
+                <repository>
+                        <id>local-repo</id>
+                        <url>${local.repo}</url>
+                        <layout>default</layout>
+                </repository>
+        </distributionManagement>
 
 	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.1</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<profile>
 			<id>generate-glossary</id>
 			<activation>
@@ -180,9 +223,6 @@
 			</activation>
 			<build>
 				<plugins>
-
-
-
 					<plugin>
 						<groupId>com.technophobia.substeps</groupId>
 						<artifactId>substeps-glossary-builder</artifactId>
