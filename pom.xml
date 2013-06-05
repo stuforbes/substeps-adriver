@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.co.stfo</groupId>
 	<artifactId>substeps-adriver</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 
 	<packaging>jar</packaging>
 	<name>A-Driver Substeps</name>
@@ -65,6 +66,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<mavenExecutorId>forked-path</mavenExecutorId>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -214,10 +219,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>2.0</version>
-						<configuration>
-							<mavenExecutorId>forked-path</mavenExecutorId>
-						</configuration>
+						<version>1.1</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -262,7 +264,8 @@
 								<param>uk.co.stfo.adriver.substeps.step.FormADriverStepImplementations</param>
 							</stepImplementationClassNames>
 
-							<glossaryPublisher implementation="com.technophobia.substeps.glossary.JsonSubstepsPublisher">
+							<glossaryPublisher
+								implementation="com.technophobia.substeps.glossary.JsonSubstepsPublisher">
 								<outputFile>${project.build.directory}/stepimplementations.json</outputFile>
 							</glossaryPublisher>
 
