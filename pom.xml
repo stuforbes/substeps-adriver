@@ -78,6 +78,32 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8.1</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin> 
 		</plugins>
 	</build>
 
@@ -91,7 +117,7 @@
 		<dependency>
 			<groupId>uk.co.stfo</groupId>
 			<artifactId>adriver</artifactId>
-			<version>0.1.9-SNAPSHOT</version>
+			<version>0.2.0</version>
 		</dependency>
 
 		<dependency>
@@ -230,7 +256,7 @@
 
 						<executions>
 							<execution>
-								<id>Build SubSteps Glossary</id>
+								<id>build-substeps-adriver-glossary</id>
 								<phase> process-test-resources</phase>
 								<goals>
 									<goal>generate-docs</goal>
@@ -240,11 +266,11 @@
 
 						<configuration>
 							<stepImplementationClassNames>
-								<param>uk.co.stf.adriver.substeps.step.ActionADriverStepImplementations</param>
-								<param>uk.co.stf.adriver.substeps.step.AssertionADriverStepImplementations</param>
+								<param>uk.co.stfo.adriver.substeps.step.ActionADriverStepImplementations</param>
+								<param>uk.co.stfo.adriver.substeps.step.AssertionADriverStepImplementations</param>
 
-								<param>uk.co.stf.adriver.substeps.step.FinderADriverStepImplementations</param>
-								<param>uk.co.stf.adriver.substeps.step.FormADriverStepImplementations</param>
+								<param>uk.co.stfo.adriver.substeps.step.FinderADriverStepImplementations</param>
+								<param>uk.co.stfo.adriver.substeps.step.FormADriverStepImplementations</param>
 							</stepImplementationClassNames>
 
 							<glossaryPublisher
