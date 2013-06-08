@@ -9,6 +9,11 @@
 	<name>A-Driver Substeps</name>
 	<description>A-Driver alternative to Webdriver SubSteps</description>
 
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
 
 	<licenses>
 		<license>
@@ -142,7 +147,7 @@
 		<dependency>
 			<groupId>uk.co.stfo</groupId>
 			<artifactId>adriver</artifactId>
-			<version>0.2.1-SNAPSHOT</version>
+			<version>0.2.1</version>
 		</dependency>
 
 		<dependency>
@@ -230,14 +235,6 @@
 		</dependency>
 
 	</dependencies>
-
-	<distributionManagement>
-		<repository>
-			<id>local-repo</id>
-			<url>${local.repo}</url>
-			<layout>default</layout>
-		</repository>
-	</distributionManagement>
 
 	<profiles>
 		<profile>
