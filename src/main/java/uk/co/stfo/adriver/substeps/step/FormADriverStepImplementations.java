@@ -4,7 +4,6 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,42 +104,37 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
      * @example ChooseOption "Option 1"
      * @section Form
      * 
-     * @param value
+     * @param text
      *            the option text of the option to be selected
      * @param id
      *            the id of the select box
      */
     @Step("ChooseOption \"([^\"]*)\" in id ([^\"]*)")
-    public void selectValueInId(final String value, final String id) {
-        LOG.debug("ChooseOption \"{}\" in id {}", value, id);
+    public void selectOptionInId(final String text, final String id) {
+        LOG.debug("ChooseOption \"{}\" in id {}", text, id);
 
         final Element element = locator.findById(id);
 
-        element.perform().select(value);
+        element.perform().select(text);
 
     }
 
 
     /**
      * Select an option in the current element (assumed to be a Select box),
-     * that has a value defined in the value field
+     * that has an option with text defined in the text field
      * 
      * @example ChooseOption "Option 3" in current element
      * @section Form
      * 
-     * @param value
-     *            the value of the option element under the select
+     * @param text
+     *            the text of the option element under the select
      */
     @Step("ChooseOption \"([^\"]*)\" in current element")
-    public void selectValueInCurrentElement(final String value) {
-        LOG.debug("ChooseOption \"{}\" in current element", value);
+    public void selectValueInCurrentElement(final String text) {
+        LOG.debug("ChooseOption \"{}\" in current element", text);
 
-        currentElement().perform().perform(new ElementAction() {
-
-            public void doActionOn(final WebElement element) {
-                new Select(element).selectByValue(value);
-            }
-        });
+        currentElement().perform().select(text);
     }
 
 
@@ -154,21 +148,23 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
      * 
      * @param id
      *            the id of the select box
-     * @param value
+     * @param text
      *            the text of the option element
      */
     @Step("AssertSelect id=\"([^\"]*)\" text=\"([^\"]*)\" is currently selected")
-    public void assertOptionIsSelected(final String id, final String value) {
-        LOG.debug("AssertSelect id=\"{}\" text=\"{}\" is currently selected", id, value);
-        final Element optionElement = locator.findById(id).child(By2.combined(By.tagName("option"), By2.text(value)));
+    public void assertOptionIsSelected(final String id, final String text) {
+        LOG.debug("AssertSelect id=\"{}\" text=\"{}\" is currently selected", id, text);
+        final Element optionElement = locator.findById(id).child(By2.combined(By.tagName("option"), By2.text(text)));
 
         optionElement.assertThat().matches(new BaseMatcher<WebElement>() {
 
+            @Override
             public boolean matches(final Object item) {
                 return ((WebElement) item).isSelected();
             }
 
 
+            @Override
             public void describeTo(final Description description) {
                 description.appendText("is selected");
             }
@@ -196,11 +192,13 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
 
         optionElement.assertThat().matches(new BaseMatcher<WebElement>() {
 
+            @Override
             public boolean matches(final Object item) {
                 return !((WebElement) item).isSelected();
             }
 
 
+            @Override
             public void describeTo(final Description description) {
                 description.appendText("is not selected");
             }
@@ -255,6 +253,7 @@ public class FormADriverStepImplementations extends AbstractADriverStepImplement
         LOG.debug("setCheckboxValue {} to {}", checkboxField, (value ? "checked" : "not checked"));
 
         checkboxField.perform().perform(new ElementAction() {
+            @Override
             public void doActionOn(final WebElement element) {
                 if (element.isSelected() && !value) {
                     element.click();

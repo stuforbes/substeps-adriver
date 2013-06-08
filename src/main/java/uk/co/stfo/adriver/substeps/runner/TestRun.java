@@ -48,6 +48,14 @@ public class TestRun {
     }
 
 
+    public void clearSession() {
+        if (this.driver != null) {
+            LOG.debug("Clearing session data on web driver");
+            this.driver.closeSession();
+        }
+    }
+
+
     public void finaliseWebDriver(final ADriverConfiguration configuration) {
         if (this.driver != null && isQuitWebDriver(configuration)) {
             LOG.debug("Closing web driver");

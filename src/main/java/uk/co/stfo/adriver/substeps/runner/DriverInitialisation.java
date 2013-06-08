@@ -7,19 +7,20 @@ import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
 import uk.co.stfo.adriver.substeps.configuration.ADriverConfigurationBuilder;
 import uk.co.stfo.adriver.substeps.driver.ADriverFactory;
 import uk.co.stfo.adriver.substeps.driver.ConfiguredADriverFactory;
+import uk.co.stfo.adriver.substeps.runner.notification.DumpPageSourceOnFailureListener;
+import uk.co.stfo.adriver.substeps.runner.notification.UpdateTestRunOnFailureNotifier;
 
 import com.google.common.base.Supplier;
 import com.technophobia.substeps.model.Scope;
 import com.technophobia.substeps.runner.ExecutionContext;
 import com.technophobia.substeps.runner.INotificationDistributor;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
 import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
 import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
-import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeEveryScenario;
 
 public class DriverInitialisation {
 
     private static final String TEST_RUN_EXECUTION_CONTEXT_KEY = "__TEST_RUN__";
-    private static final String A_DRIVER_FACTORY_EXECUTION_CONTEXT_KEY = "__A_DRIVER_FACTORY__";
     private static final String CONFIGURATION_EXECUTION_CONTEXT_KEY = "__CONFIGURATION__";
 
     private static final Logger LOG = LoggerFactory.getLogger(DriverInitialisation.class);
@@ -27,8 +28,9 @@ public class DriverInitialisation {
 
     public static Supplier<TestRun> currentTestRun() {
         return new Supplier<TestRun>() {
+            @Override
             public TestRun get() {
-                return (TestRun) ExecutionContext.get(Scope.SCENARIO, TEST_RUN_EXECUTION_CONTEXT_KEY);
+                return (TestRun) ExecutionContext.get(Scope.SUITE, TEST_RUN_EXECUTION_CONTEXT_KEY);
             }
         };
     }
@@ -36,6 +38,7 @@ public class DriverInitialisation {
 
     public static Supplier<ADriverConfiguration> configuration() {
         return new Supplier<ADriverConfiguration>() {
+            @Override
             public ADriverConfiguration get() {
                 return (ADriverConfiguration) ExecutionContext.get(Scope.SUITE, CONFIGURATION_EXECUTION_CONTEXT_KEY);
             }
@@ -51,6 +54,8 @@ public class DriverInitialisation {
                 INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY);
 
         notifier.addListener(new UpdateTestRunOnFailureNotifier(currentTestRun()));
+        notifier.addListener(new DumpPageSourceOnFailureListener(configuration(), currentTestRun()));
+
     }
 
 
@@ -69,21 +74,32 @@ public class DriverInitialisation {
         ExecutionContext.put(Scope.SUITE, CONFIGURATION_EXECUTION_CONTEXT_KEY, configuration);
 
         final ADriverFactory driverFactory = createDriverFactory(configuration);
-        ExecutionContext.put(Scope.SUITE, A_DRIVER_FACTORY_EXECUTION_CONTEXT_KEY, driverFactory);
+        final TestRun testRun = new TestRun(driverFactory.createDriver());
+        ExecutionContext.put(Scope.SUITE, TEST_RUN_EXECUTION_CONTEXT_KEY, testRun);
     }
 
 
-    @BeforeEveryScenario
-    public void basePreScenarioSetup() {
-        final ADriverFactory factory = (ADriverFactory) ExecutionContext.get(Scope.SUITE,
-                A_DRIVER_FACTORY_EXECUTION_CONTEXT_KEY);
-        ExecutionContext.put(Scope.SCENARIO, TEST_RUN_EXECUTION_CONTEXT_KEY, new TestRun(factory.createDriver()));
-    }
-
+    // @BeforeEveryScenario
+    // public void basePreScenarioSetup() {
+    // final ADriverFactory factory = (ADriverFactory)
+    // ExecutionContext.get(Scope.SUITE,
+    // A_DRIVER_FACTORY_EXECUTION_CONTEXT_KEY);
+    // ExecutionContext.put(Scope.SCENARIO, TEST_RUN_EXECUTION_CONTEXT_KEY, new
+    // TestRun(factory.createDriver()));
+    // }
 
     @AfterEveryScenario
     public void basePostScenariotearDown() {
 
+        final TestRun testRun = currentTestRun().get();
+        if (testRun != null) {
+            testRun.clearSession();
+        }
+    }
+
+
+    @AfterAllFeatures
+    public void finaliseWebDriver() {
         final TestRun testRun = currentTestRun().get();
         if (testRun != null) {
             testRun.finaliseWebDriver((ADriverConfiguration) ExecutionContext.get(Scope.SUITE,

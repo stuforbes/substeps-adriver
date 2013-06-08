@@ -37,17 +37,32 @@ public class By2 {
 
 
     /**
-     * Find an element/elements that contain the specified inner text
+     * Find an element/elements that equals the specified inner text
      * 
      * @param text
-     * @return A {@link By} that has inner text that contains the contents of
-     *         the "text" attribute
+     * @return A {@link By} that has inner text that equals the contents of the
+     *         "text" attribute
      */
     public static By text(final String text) {
         if (StringUtils.isBlank(text)) {
             throw new IllegalArgumentException("Cannot find elements with null or empty text.");
         }
-        return new ByText(text);
+        return new ByText(text, true);
+    }
+
+
+    /**
+     * Find an element/elements that contains the specified inner text
+     * 
+     * @param text
+     * @return A {@link By} that has inner text that contains the contents of
+     *         the "text" attribute
+     */
+    public static By textFragment(final String text) {
+        if (StringUtils.isBlank(text)) {
+            throw new IllegalArgumentException("Cannot find elements with null or empty text.");
+        }
+        return new ByText(text, false);
     }
 
 
@@ -100,25 +115,28 @@ public class By2 {
 
     static class ByText extends By {
 
-        private static final String XPATH_PATTERN = "self::node()[contains(text(), '%s')] | .//*[contains(text(), '%s')]";
+        private static final String XPATH_PARTIAL_PATTERN = "self::node()[contains(text(), '%s')] | .//*[contains(text(), '%s')]";
+        private static final String XPATH_EXACT_PATTERN = "self::node()[text()='%s'] | .//*[text()='%s']";
 
         private final String text;
+        private final String pattern;
 
 
-        public ByText(final String text) {
+        public ByText(final String text, final boolean exactMatch) {
             this.text = text;
+            this.pattern = exactMatch ? XPATH_EXACT_PATTERN : XPATH_PARTIAL_PATTERN;
         }
 
 
         @Override
         public List<WebElement> findElements(final SearchContext context) {
-            return ((FindsByXPath) context).findElementsByXPath(String.format(XPATH_PATTERN, text, text));
+            return ((FindsByXPath) context).findElementsByXPath(String.format(pattern, text, text));
         }
 
 
         @Override
         public WebElement findElement(final SearchContext context) {
-            return ((FindsByXPath) context).findElementByXPath(String.format(XPATH_PATTERN, text, text));
+            return ((FindsByXPath) context).findElementByXPath(String.format(pattern, text, text));
         }
 
 

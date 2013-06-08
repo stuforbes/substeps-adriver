@@ -151,7 +151,7 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
     public void assertTagElementContainsText(final String tag, final String text) {
         LOG.debug("AssertTagElementContainsText tag=\"{}\" text=\"{}\"", tag, text);
 
-        driver().child(By2.combined(By.tagName(tag), By2.text(text))).assertThat().doesExist();
+        driver().child(By2.combined(By.tagName(tag), By2.textFragment(text))).assertThat().doesExist();
     }
 
 
@@ -231,6 +231,7 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
         // check that the current element is not null and is a radio btn
         currentElement().assertThat().matches(new BaseMatcher<WebElement>() {
 
+            @Override
             public boolean matches(final Object obj) {
                 final WebElement element = (WebElement) obj;
 
@@ -245,6 +246,7 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
             }
 
 
+            @Override
             public void describeTo(final Description description) {
                 description.appendText("A Checkbox element with a checked status of ");
                 description.appendText(checkedString);
@@ -272,6 +274,7 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
         // check that the current element is not null and is a radio btn
         currentElement().assertThat().matches(new BaseMatcher<WebElement>() {
 
+            @Override
             public boolean matches(final Object obj) {
                 final WebElement element = (WebElement) obj;
 
@@ -286,6 +289,7 @@ public class AssertionADriverStepImplementations extends AbstractADriverStepImpl
             }
 
 
+            @Override
             public void describeTo(final Description description) {
                 description.appendText("A Radio button element with a selected status of ");
                 description.appendText(checkedString);

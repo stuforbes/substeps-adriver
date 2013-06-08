@@ -89,9 +89,8 @@ public class By2Test {
 
         context.checking(new Expectations() {
             {
-                oneOf(searchContext)
-                        .findElementByXPath(
-                                "self::node()[contains(text(), 'some element text')] | .//*[contains(text(), 'some element text')]");
+                oneOf(searchContext).findElementByXPath(
+                        "self::node()[text()='some element text'] | .//*[text()='some element text']");
                 will(returnValue(element));
             }
         });
@@ -110,6 +109,53 @@ public class By2Test {
 
         context.checking(new Expectations() {
             {
+                oneOf(searchContext).findElementsByXPath(
+                        "self::node()[text()='some element text'] | .//*[text()='some element text']");
+                will(returnValue(elements));
+            }
+        });
+
+        assertThat(By2.text("some element text").findElements(searchContext), is(elements));
+    }
+
+
+    @Test
+    public void byTextFragmentThrowsExceptionIfTextIsInvalid() {
+        checkTextFragmentIsInvalid(null);
+        checkTextFragmentIsInvalid("");
+        checkTextFragmentIsInvalid(" ");
+        checkTextFragmentIsInvalid("\n\t ");
+    }
+
+
+    @Test
+    public void byTextFragmentFindsElementInDocument() {
+        final SearchContextFindsByXPath searchContext = context.mock(SearchContextFindsByXPath.class);
+        final WebElement element = context.mock(WebElement.class);
+
+        context.checking(new Expectations() {
+            {
+                oneOf(searchContext)
+                        .findElementByXPath(
+                                "self::node()[contains(text(), 'some element text')] | .//*[contains(text(), 'some element text')]");
+                will(returnValue(element));
+            }
+        });
+
+        assertThat(By2.textFragment("some element text").findElement(searchContext), is(element));
+    }
+
+
+    @Test
+    public void byTextFragmentFindsElementsInDocument() {
+        final SearchContextFindsByXPath searchContext = context.mock(SearchContextFindsByXPath.class);
+        final WebElement element1 = context.mock(WebElement.class, "element1");
+        final WebElement element2 = context.mock(WebElement.class, "element2");
+        final WebElement element3 = context.mock(WebElement.class, "element3");
+        final List<WebElement> elements = Arrays.asList(element1, element2, element3);
+
+        context.checking(new Expectations() {
+            {
                 oneOf(searchContext)
                         .findElementsByXPath(
                                 "self::node()[contains(text(), 'some element text')] | .//*[contains(text(), 'some element text')]");
@@ -117,7 +163,7 @@ public class By2Test {
             }
         });
 
-        assertThat(By2.text("some element text").findElements(searchContext), is(elements));
+        assertThat(By2.textFragment("some element text").findElements(searchContext), is(elements));
     }
 
 
@@ -178,6 +224,16 @@ public class By2Test {
     private void checkTextIsInvalid(final String text) {
         try {
             By2.text(text);
+            fail("Expecting an " + IllegalArgumentException.class.getName() + " to be thrown");
+        } catch (final IllegalArgumentException ex) {
+            // No-op
+        }
+    }
+
+
+    private void checkTextFragmentIsInvalid(final String text) {
+        try {
+            By2.textFragment(text);
             fail("Expecting an " + IllegalArgumentException.class.getName() + " to be thrown");
         } catch (final IllegalArgumentException ex) {
             // No-op

@@ -51,6 +51,16 @@ public class ADriverConfiguration {
     }
 
 
+    public boolean dumpHtmlOnFailure() {
+        return config.getBoolean("dump.html.on.fail");
+    }
+
+
+    public String getDumpHtmlFolder() {
+        return config.getString("dump.html.folder");
+    }
+
+
     public CloseWebDriverStrategy getCloseWebDriverStrategy() {
         final String value = config.getString("close.web.driver.strategy");
         return value != null ? CloseWebDriverStrategy.valueOf(value) : null;
