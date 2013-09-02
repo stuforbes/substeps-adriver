@@ -4,6 +4,7 @@ import uk.co.stfo.adriver.driver.Driver;
 import uk.co.stfo.adriver.element.Element;
 import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
 import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
+import uk.co.stfo.adriver.substeps.runner.ExecutionState;
 import uk.co.stfo.adriver.substeps.runner.TestRun;
 
 import com.google.common.base.Supplier;
@@ -15,7 +16,7 @@ public abstract class AbstractADriverStepImplementations {
 
 
     public AbstractADriverStepImplementations() {
-        this(DriverInitialisation.currentTestRun(), DriverInitialisation.configuration());
+        this(ExecutionState.currentTestRun(), ExecutionState.configuration());
     }
 
 

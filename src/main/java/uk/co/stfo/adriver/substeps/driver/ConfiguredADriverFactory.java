@@ -17,6 +17,7 @@ public class ConfiguredADriverFactory implements ADriverFactory {
     }
 
 
+    @Override
     public Driver createDriver() {
         final WebDriver webDriver = WebDriverFactories.createFor(configuration.getDriverType(), configuration);
 

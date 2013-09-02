@@ -1,5 +1,7 @@
 package uk.co.stfo.adriver.substeps.runner.notification;
 
+import uk.co.stfo.adriver.substeps.runner.DriverInitialisation;
+import uk.co.stfo.adriver.substeps.runner.ExecutionState;
 import uk.co.stfo.adriver.substeps.runner.TestRun;
 
 import com.google.common.base.Supplier;
@@ -8,6 +10,10 @@ import com.technophobia.substeps.execution.node.IExecutionNode;
 public class UpdateTestRunOnFailureNotifier extends NotifierAdapter {
 
     private final Supplier<TestRun> testRunSupplier;
+
+    public UpdateTestRunOnFailureNotifier(){
+        this(ExecutionState.currentTestRun());
+    }
 
 
     public UpdateTestRunOnFailureNotifier(final Supplier<TestRun> testRunSupplier) {

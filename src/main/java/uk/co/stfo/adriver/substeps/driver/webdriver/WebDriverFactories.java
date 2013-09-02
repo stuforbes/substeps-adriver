@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -28,7 +29,15 @@ public class WebDriverFactories {
     public static WebDriver createFor(final DriverType driverType, final ADriverConfiguration configuration) {
 
         if (driverMap.containsKey(driverType)) {
-            return driverMap.get(driverType).apply(configuration);
+            final WebDriver driver = driverMap.get(driverType).apply(configuration);
+
+            if (configuration.takeScreenshotOnFailure() && !(driver instanceof TakesScreenshot)) {
+                throw new IllegalStateException(
+                        "Substeps is configured to take screenshots, but the defined webdriver ("
+                                + configuration.getDriverType().name() + ") does not support this");
+            }
+
+            return driver;
         }
         throw new IllegalArgumentException("Unknown WebDriver type: " + driverType);
     }
@@ -36,6 +45,7 @@ public class WebDriverFactories {
 
     private static Function<ADriverConfiguration, WebDriver> firefoxDriver() {
         return new Function<ADriverConfiguration, WebDriver>() {
+            @Override
             public WebDriver apply(final ADriverConfiguration input) {
                 return new FirefoxDriver();
             }
@@ -45,6 +55,7 @@ public class WebDriverFactories {
 
     private static Function<ADriverConfiguration, WebDriver> phantomJsDriver() {
         return new Function<ADriverConfiguration, WebDriver>() {
+            @Override
             public WebDriver apply(final ADriverConfiguration input) {
                 final DesiredCapabilities capabilities = new DesiredCapabilities();
                 capabilities.setJavascriptEnabled(true);
@@ -59,6 +70,7 @@ public class WebDriverFactories {
 
     private static Function<ADriverConfiguration, WebDriver> htmlUnitDriver() {
         return new Function<ADriverConfiguration, WebDriver>() {
+            @Override
             public WebDriver apply(final ADriverConfiguration input) {
                 final HtmlUnitDriver htmlUnitDriver = new HtmlUnitDriver(BrowserVersion.FIREFOX_10);
                 htmlUnitDriver.setJavascriptEnabled(Boolean.valueOf(input.getProperty("javascript.enabled")));
@@ -77,6 +89,7 @@ public class WebDriverFactories {
 
     private static Function<ADriverConfiguration, WebDriver> chromeDriver() {
         return new Function<ADriverConfiguration, WebDriver>() {
+            @Override
             public WebDriver apply(final ADriverConfiguration input) {
                 return new ChromeDriver();
             }
@@ -86,6 +99,7 @@ public class WebDriverFactories {
 
     private static Function<ADriverConfiguration, WebDriver> ieDriver() {
         return new Function<ADriverConfiguration, WebDriver>() {
+            @Override
             public WebDriver apply(final ADriverConfiguration input) {
                 final DesiredCapabilities ieCapabilities = DesiredCapabilities.internetExplorer();
                 ieCapabilities.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS,

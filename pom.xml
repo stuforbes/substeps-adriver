@@ -147,7 +147,13 @@
 		<dependency>
 			<groupId>uk.co.stfo</groupId>
 			<artifactId>adriver</artifactId>
-			<version>0.2.1</version>
+			<version>0.2.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
 
 		<dependency>

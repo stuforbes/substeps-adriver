@@ -1,63 +1,47 @@
 package uk.co.stfo.adriver.substeps.runner;
 
+import com.technophobia.substeps.model.Scope;
+import com.technophobia.substeps.runner.ExecutionContext;
+import com.technophobia.substeps.runner.INotificationDistributor;
+import com.technophobia.substeps.runner.INotifier;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
+import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
+import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import uk.co.stfo.adriver.substeps.configuration.ADriverConfiguration;
 import uk.co.stfo.adriver.substeps.configuration.ADriverConfigurationBuilder;
 import uk.co.stfo.adriver.substeps.driver.ADriverFactory;
 import uk.co.stfo.adriver.substeps.driver.ConfiguredADriverFactory;
-import uk.co.stfo.adriver.substeps.runner.notification.DumpPageSourceOnFailureListener;
-import uk.co.stfo.adriver.substeps.runner.notification.UpdateTestRunOnFailureNotifier;
 
-import com.google.common.base.Supplier;
-import com.technophobia.substeps.model.Scope;
-import com.technophobia.substeps.runner.ExecutionContext;
-import com.technophobia.substeps.runner.INotificationDistributor;
-import com.technophobia.substeps.runner.setupteardown.Annotations.AfterAllFeatures;
-import com.technophobia.substeps.runner.setupteardown.Annotations.AfterEveryScenario;
-import com.technophobia.substeps.runner.setupteardown.Annotations.BeforeAllFeatures;
+import java.util.List;
 
 public class DriverInitialisation {
 
-    private static final String TEST_RUN_EXECUTION_CONTEXT_KEY = "__TEST_RUN__";
-    private static final String CONFIGURATION_EXECUTION_CONTEXT_KEY = "__CONFIGURATION__";
-
     private static final Logger LOG = LoggerFactory.getLogger(DriverInitialisation.class);
-
-
-    public static Supplier<TestRun> currentTestRun() {
-        return new Supplier<TestRun>() {
-            @Override
-            public TestRun get() {
-                return (TestRun) ExecutionContext.get(Scope.SUITE, TEST_RUN_EXECUTION_CONTEXT_KEY);
-            }
-        };
-    }
-
-
-    public static Supplier<ADriverConfiguration> configuration() {
-        return new Supplier<ADriverConfiguration>() {
-            @Override
-            public ADriverConfiguration get() {
-                return (ADriverConfiguration) ExecutionContext.get(Scope.SUITE, CONFIGURATION_EXECUTION_CONTEXT_KEY);
-            }
-        };
-    }
 
 
     @BeforeAllFeatures
     public void notificationInitialisation() {
         LOG.info("Updating notification distributor");
 
-        final INotificationDistributor notifier = (INotificationDistributor) ExecutionContext.get(Scope.SUITE,
+
+        final INotificationDistributor notificationDistributor = (INotificationDistributor) ExecutionContext.get(Scope.SUITE,
                 INotificationDistributor.NOTIFIER_DISTRIBUTOR_KEY);
 
-        notifier.addListener(new UpdateTestRunOnFailureNotifier(currentTestRun()));
-        notifier.addListener(new DumpPageSourceOnFailureListener(configuration(), currentTestRun()));
+        List<String> notifiers = ExecutionState.configuration().get().getNotifiers();
+        for (String notifierClassName : notifiers){
+            INotifier notifier = instantiateNotifier(notifierClassName.trim());
+            if(notifier != null){
+                notificationDistributor.addListener(notifier);
+            }
+        }
+
+//        notifier.addListener(new UpdateTestRunOnFailureNotifier(currentTestRun()));
+//        notifier.addListener(new DumpPageSourceOnFailureListener(configuration(), currentTestRun()));
+//        notifier.addListener(new TakeScreenshotOnFailureListener(configuration(), currentTestRun()));
 
     }
-
 
     @BeforeAllFeatures
     public void createADriver() {
@@ -71,11 +55,11 @@ public class DriverInitialisation {
         configurationBuilder.addCustomProperties(environment + ".properties");
 
         final ADriverConfiguration configuration = configurationBuilder.build();
-        ExecutionContext.put(Scope.SUITE, CONFIGURATION_EXECUTION_CONTEXT_KEY, configuration);
+        ExecutionContext.put(Scope.SUITE, ExecutionState.CONFIGURATION_EXECUTION_CONTEXT_KEY, configuration);
 
         final ADriverFactory driverFactory = createDriverFactory(configuration);
         final TestRun testRun = new TestRun(driverFactory.createDriver());
-        ExecutionContext.put(Scope.SUITE, TEST_RUN_EXECUTION_CONTEXT_KEY, testRun);
+        ExecutionContext.put(Scope.SUITE, ExecutionState.TEST_RUN_EXECUTION_CONTEXT_KEY, testRun);
     }
 
 
@@ -91,7 +75,7 @@ public class DriverInitialisation {
     @AfterEveryScenario
     public void basePostScenariotearDown() {
 
-        final TestRun testRun = currentTestRun().get();
+        final TestRun testRun = ExecutionState.currentTestRun().get();
         if (testRun != null) {
             testRun.clearSession();
         }
@@ -100,10 +84,10 @@ public class DriverInitialisation {
 
     @AfterAllFeatures
     public void finaliseWebDriver() {
-        final TestRun testRun = currentTestRun().get();
+        final TestRun testRun = ExecutionState.currentTestRun().get();
         if (testRun != null) {
             testRun.finaliseWebDriver((ADriverConfiguration) ExecutionContext.get(Scope.SUITE,
-                    CONFIGURATION_EXECUTION_CONTEXT_KEY));
+                    ExecutionState.CONFIGURATION_EXECUTION_CONTEXT_KEY));
         }
     }
 
@@ -124,4 +108,17 @@ public class DriverInitialisation {
         return new ConfiguredADriverFactory(configuration);
     }
 
+    private INotifier instantiateNotifier(String notifierClassName) {
+        try {
+            Class<? extends INotifier> notifierClass = (Class<? extends INotifier>) Class.forName(notifierClassName);
+            return notifierClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            LOG.warn("Could not find class "+notifierClassName);
+        } catch (InstantiationException e) {
+            LOG.warn("Could not instantiate class "+notifierClassName);
+        } catch (IllegalAccessException e) {
+            LOG.warn("Could not access class "+notifierClassName);
+        }
+        return null;
+    }
 }

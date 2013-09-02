@@ -12,6 +12,9 @@ import org.junit.Test;
 
 import uk.co.stfo.adriver.substeps.driver.DriverType;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class ADriverConfigurationTest {
 
     @Rule
@@ -77,6 +80,18 @@ public class ADriverConfigurationTest {
         assertThat(driverConfiguration.getCloseWebDriverStrategy(), is(CloseWebDriverStrategy.ON_TEST_SUCCESS_ONLY));
     }
 
+    @Test
+    public void canGetNotifiersAsList(){
+
+        prepareConfigWithList("test.notifiers", "reporter1","reporter2","reporter3");
+
+        List<String> notifiers = driverConfiguration.getNotifiers();
+        assertThat(notifiers.size(), is(3));
+        assertThat(notifiers.get(0), is("reporter1"));
+        assertThat(notifiers.get(1), is("reporter2"));
+        assertThat(notifiers.get(2), is("reporter3"));
+    }
+
 
     @Test
     public void canGetGenericPropertyStrings() {
@@ -104,6 +119,16 @@ public class ADriverConfigurationTest {
             {
                 oneOf(configuration).getLong(key);
                 will(returnValue(value));
+            }
+        });
+    }
+
+    private void prepareConfigWithList(final String key, final String... values) {
+
+        context.checking(new Expectations() {
+            {
+                oneOf(configuration).getList(key);
+                will(returnValue(Arrays.asList(values)));
             }
         });
     }
