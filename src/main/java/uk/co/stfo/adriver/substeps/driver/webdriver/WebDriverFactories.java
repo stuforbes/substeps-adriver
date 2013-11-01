@@ -1,8 +1,11 @@
 package uk.co.stfo.adriver.substeps.driver.webdriver;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Map;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import junit.framework.Assert;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -81,6 +84,18 @@ public class WebDriverFactories {
                     htmlUnitDriver.setProxy(proxyHost, proxyPort);
                 }
 
+                final String disableJavascriptExceptions = input.getProperty("disable.javascript.exceptions");
+                if(!StringUtils.isEmpty(disableJavascriptExceptions) && "true".equals(disableJavascriptExceptions)){
+                    webClientFor(htmlUnitDriver, new Function<WebClient, Void>() {
+                        @Override
+                        public Void apply(WebClient webClient) {
+                            if(webClient != null){
+                                webClient.getOptions().setThrowExceptionOnScriptError(false);
+                            }
+                            return null;
+                        }
+                    });
+                }
                 return htmlUnitDriver;
             }
         };
@@ -108,6 +123,26 @@ public class WebDriverFactories {
                 return new InternetExplorerDriver(ieCapabilities);
             }
         };
+    }
+
+    private static void webClientFor(final HtmlUnitDriver webDriver, Function<WebClient, Void> operator){
+        try{
+            final Field field = webDriver.getClass().getDeclaredField("webClient");
+            if(field != null){
+                boolean original = field.isAccessible();
+                field.setAccessible(true);
+
+                operator.apply((WebClient)field.get(webDriver));
+                field.setAccessible(original);
+
+            } else{
+                Assert.fail("Could not get webClient field for "+webDriver);
+            }
+        } catch (IllegalAccessException e) {
+            Assert.fail("IllegalAccessException trying to get webClient for "+webDriver);
+        } catch (NoSuchFieldException e) {
+            Assert.fail("NoSuchFieldException trying to get webClient for " + webDriver);
+        }
     }
 
 
