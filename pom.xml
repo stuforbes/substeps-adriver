@@ -41,15 +41,15 @@
 	</developers>
 
 	<properties>
-		<selenium.version>2.31.0</selenium.version>
+		<selenium.version>2.40.0</selenium.version>
 
 		<hamcrest.version>1.3</hamcrest.version>
-		<junit.version>4.10</junit.version>
+		<junit.version>4.11</junit.version>
 
-		<substeps.api.version>1.1.0</substeps.api.version>
-		<substeps.core.version>1.1.0</substeps.core.version>
-		<substeps.runners.version>1.1.0</substeps.runners.version>
-		<substeps.glossary.version>1.1.0</substeps.glossary.version>
+		<substeps.api.version>1.1.2</substeps.api.version>
+		<substeps.core.version>1.1.2</substeps.core.version>
+		<substeps.runners.version>1.1.2</substeps.runners.version>
+		<substeps.glossary.version>1.1.2</substeps.glossary.version>
 	</properties>
 
 	<build>
@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>uk.co.stfo</groupId>
 			<artifactId>adriver</artifactId>
-			<version>0.2.3</version>
+			<version>0.2.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>

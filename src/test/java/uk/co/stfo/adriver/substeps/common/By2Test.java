@@ -39,7 +39,7 @@ public class By2Test {
 
         context.checking(new Expectations() {
             {
-                oneOf(searchContext).findElementsByXPath("*[@id = 'an-id']");
+                oneOf(searchContext).findElementsByXPath(".//*[@id = 'an-id']");
                 will(returnValue(Collections.singletonList(element)));
 
                 oneOf(searchContext).findElementsByXPath(
@@ -60,7 +60,7 @@ public class By2Test {
 
         context.checking(new Expectations() {
             {
-                oneOf(searchContext).findElementsByXPath("*[@id = 'an-id']");
+                oneOf(searchContext).findElementsByXPath(".//*[@id = 'an-id']");
                 will(returnValue(Collections.singletonList(element)));
 
                 oneOf(searchContext).findElementsByXPath(
